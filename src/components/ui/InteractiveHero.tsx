@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useScroll, useMotionValueEvent } from 'framer-motion';
 import Header from './Header';
-import ScrollAnimationHero from './ScrollAnimationHero';
 
 /**
  * InteractiveHero 组件：
@@ -26,7 +25,6 @@ const InteractiveHero: React.FC = () => {
               导致动画无法在视口中停留。移除后，滚动动画可以正常触发和播放。
             */}
             <div className="relative pt-[70px] min-h-screen">
-                <ScrollAnimationHero />
             </div>
         </div>
     );

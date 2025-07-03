@@ -6,9 +6,7 @@ import InteractiveBackground from '@/components/ui/InteractiveBackground';
 import RainEffect from '@/components/ui/RainEffect';
 import InteractiveHero from '@/components/ui/InteractiveHero';
 import PlaceholderSection from '@/components/ui/PlaceholderSection';
-import { ThemeColorPicker, type ColorPickerValue } from '@/components/ui/ThemeColorPicker';
-import { Paintbrush } from 'lucide-react';
-import MusicPlayer from '@/components/ui/MusicPlayer';
+
 
 const Page = () => {
     const pageRef = useRef<HTMLDivElement>(null);
@@ -29,10 +27,6 @@ const Page = () => {
         return () => resizeObserver.disconnect();
     }, []);
 
-    const handleColorChange = (color: ColorPickerValue) => {
-        setThemeColor(color.hex);
-    };
-
     return (
         <div 
             ref={pageRef} 
@@ -43,21 +37,6 @@ const Page = () => {
             
             <InteractiveBackground color={themeColor} />
             <RainEffect pageHeight={pageHeight} color={themeColor} />
-
-            <div className="fixed top-[86px] right-6 z-50">
-                <ThemeColorPicker
-                    value={themeColor}
-                    onValueChange={handleColorChange}
-                >
-                    <button
-                        className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-lg transition-transform hover:scale-110"
-                        style={{ backgroundColor: themeColor }}
-                        aria-label="打开颜色选择器"
-                    >
-                        <Paintbrush size={24} />
-                    </button>
-                </ThemeColorPicker>
-            </div>
             
             <main className="relative z-10">
                 <InteractiveHero />
@@ -84,7 +63,6 @@ const Page = () => {
                 <PlaceholderSection title="定价方案" />
                 <PlaceholderSection title="关于我们" />
             </main>
-            <MusicPlayer />
         </div>
     );
 };
