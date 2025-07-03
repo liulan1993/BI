@@ -303,7 +303,7 @@ const Page = () => {
                         <path d="M2 17L12 22L22 17" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         <path d="M2 12L12 17L22 12" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    <span className="text-3xl font-bold text-white ml-2">Nexus</span>
+                    <span className="text-3xl font-bold text-white ml-2">Apex</span>
                 </div>
 
                 {/* 右侧操作按钮 */}
@@ -315,7 +315,7 @@ const Page = () => {
                         whileTap={{ scale: 0.97 }}
                         transition={{ type: "spring", stiffness: 400, damping: 15 }}
                     >
-                        Book a demo
+                        健康指数看板
                     </motion.a>
                     
                     {/* 移动端菜单按钮 */}
