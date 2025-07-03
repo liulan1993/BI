@@ -15,12 +15,6 @@ import {
     type Variants,
 } from 'framer-motion';
 
-// --- 辅助函数 ---
-// 用于动态合并 Tailwind CSS 类名
-function cn(...classes: (string | undefined | null | boolean)[]): string {
-  return classes.filter(Boolean).join(" ");
-}
-
 // --- 类型定义 ---
 
 // Canvas 中点的类型
