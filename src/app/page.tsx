@@ -1,36 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import GlobalStyles from '@/components/ui/GlobalStyles';
-import InteractiveBackground from '@/components/ui/InteractiveBackground';
-import RainEffect from '@/components/ui/RainEffect';
 import InteractiveHero from '@/components/ui/InteractiveHero';
 import PlaceholderSection from '@/components/ui/PlaceholderSection';
 
 
 const Page = () => {
-    const pageRef = useRef<HTMLDivElement>(null);
-    const [pageHeight, setPageHeight] = useState(0);
-    // 移除了未使用的 setThemeColor
+    // 移除了未使用的 pageRef, pageHeight, setPageHeight, 和 useEffect
     const [themeColor] = useState<`#${string}`>('#00f5c3');
-
-    useEffect(() => {
-        const pageElement = pageRef.current;
-        if (!pageElement) return;
-
-        const resizeObserver = new ResizeObserver(() => {
-            setPageHeight(pageElement.scrollHeight);
-        });
-
-        resizeObserver.observe(pageElement);
-        setPageHeight(pageElement.scrollHeight);
-
-        return () => resizeObserver.disconnect();
-    }, []);
 
     return (
         <div 
-            ref={pageRef} 
             className="relative" 
             style={{ '--theme-color': themeColor } as React.CSSProperties}
         >
