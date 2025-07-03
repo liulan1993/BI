@@ -11,7 +11,8 @@ import PlaceholderSection from '@/components/ui/PlaceholderSection';
 const Page = () => {
     const pageRef = useRef<HTMLDivElement>(null);
     const [pageHeight, setPageHeight] = useState(0);
-    const [themeColor, setThemeColor] = useState<`#${string}`>('#00f5c3');
+    // 移除了未使用的 setThemeColor
+    const [themeColor] = useState<`#${string}`>('#00f5c3');
 
     useEffect(() => {
         const pageElement = pageRef.current;
@@ -34,10 +35,7 @@ const Page = () => {
             style={{ '--theme-color': themeColor } as React.CSSProperties}
         >
             <GlobalStyles />
-            
-            <InteractiveBackground color={themeColor} />
-            <RainEffect pageHeight={pageHeight} color={themeColor} />
-            
+                     
             <main className="relative z-10">
                 <InteractiveHero />
                 <PlaceholderSection title="功能介绍" />

@@ -1,41 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence, type Variants } from 'framer-motion';
+// 移除了未使用的 AnimatePresence
+import { motion, type Variants } from 'framer-motion';
 
 // --- 临时的占位组件，请参考此逻辑修改您项目中的实际组件 ---
 
-// 为 NavLink 定义 Props 类型
-interface NavLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-    children: React.ReactNode;
-    hasDropdown?: boolean;
-}
-
-// NavLink 组件现在会接收 hasDropdown 属性，但不会将其传递给 <a> 标签
-const NavLink = ({ children, hasDropdown, ...props }: NavLinkProps) => (
-    <a {...props} className="text-gray-300 hover:text-white transition-colors duration-200 flex items-center">
-        {children}
-        {hasDropdown && (
-            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-        )}
-    </a>
-);
-
-// 为 DropdownMenu 定义 Props 类型
-const DropdownMenu = ({ children, isOpen }: { children: React.ReactNode; isOpen: boolean }) => isOpen ? <div className="absolute top-full left-0 mt-2 bg-[#1a1a1a] rounded-md shadow-lg p-2">{children}</div> : null;
-
-// 为 DropdownItem 定义 Props 类型
-interface DropdownItemProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-    children: React.ReactNode;
-    icon?: React.ReactNode;
-}
-const DropdownItem = ({ children, icon, ...props }: DropdownItemProps) => <a {...props} className="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 rounded-md flex items-center">{children}{icon}</a>;
-
 const MenuIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" /></svg>;
 const CloseIcon = () => <svg className="w-6 h-6" fill="none"stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>;
-const ExternalLinkIcon = () => <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>;
+// 移除了未使用的 NavLink, DropdownMenu, DropdownItem, ExternalLinkIcon 组件
+
 // --- 占位组件结束 ---
 
 
@@ -46,8 +20,8 @@ const ExternalLinkIcon = () => <svg className="w-4 h-4 ml-1" fill="none" stroke=
  */
 const Header: React.FC<{ isScrolled: boolean }> = ({ isScrolled }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-
+    // 移除了未使用的 openDropdown 和 setOpenDropdown
+    
     useEffect(() => {
         if (isMobileMenuOpen) {
             document.body.style.overflow = 'hidden';
@@ -69,11 +43,7 @@ const Header: React.FC<{ isScrolled: boolean }> = ({ isScrolled }) => {
         }
     };
 
-    const mobileMenuVariants: Variants = {
-        hidden: { opacity: 0, y: -20 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" } },
-        exit: { opacity: 0, y: -20, transition: { duration: 0.15, ease: "easeIn" } }
-    };
+    // 移除了未使用的 mobileMenuVariants
 
     return (
         <motion.header
