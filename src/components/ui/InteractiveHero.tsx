@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useScroll, useMotionValueEvent } from 'framer-motion';
 import Header from './Header';
 
+
 /**
  * InteractiveHero 组件：
  * 作为一个容器，编排背景、页眉和主要内容组件。
