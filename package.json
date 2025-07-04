@@ -54,6 +54,7 @@
     "reaviz": "^16.0.4",
     "recharts": "^3.0.2",
     "remark-gfm": "^4.0.1",
+    "styled-components": "^6.1.19",
     "tailwind-merge": "^3.3.1",
     "three": "^0.177.0",
     "tweakpane": "^4.0.5",
@@ -70,9 +71,11 @@
     "@types/react-dom": "^19",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@types/three": "^0.177.0",
+    "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.3.4",
-    "tailwindcss": "^4",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11",
     "typescript": "^5"
   }
 }
