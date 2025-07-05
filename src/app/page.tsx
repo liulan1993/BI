@@ -447,7 +447,7 @@ function InteractiveMenu({ data }: { data: { id: string; title: string; content:
         <div className="w-full h-full flex items-center justify-center">
             <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 h-auto">
                 {/* 左侧标签栏 */}
-                <div className="lg:col-span-1 flex flex-col space-y-4 overflow-y-auto pr-4 h-[500px] self-center">
+                <div className="lg:col-span-1 flex flex-col space-y-4 pr-4 h-[500px] self-center">
                     {data.map(tab => (
                         <TabButton
                             key={tab.id}
@@ -555,10 +555,10 @@ function HealthMetricsTabs() {
   ];
 
   const tabContent = [
-    <InteractiveMenu data={cardiovascularMetabolicData} />,
-    <InteractiveMenu data={inflammationImmunityNutritionData} />,
-    <InteractiveMenu data={multiOrganFunctionData} />,
-    <InteractiveMenu data={integrativeMedicineData} />,
+    <InteractiveMenu key="cardio" data={cardiovascularMetabolicData} />,
+    <InteractiveMenu key="inflammation" data={inflammationImmunityNutritionData} />,
+    <InteractiveMenu key="organ" data={multiOrganFunctionData} />,
+    <InteractiveMenu key="integrative" data={integrativeMedicineData} />,
   ];
 
   return (
