@@ -12,8 +12,222 @@ import {
     AnimatePresence,
     useScroll,
     useMotionValueEvent,
+    useMotionValue,
+    useTransform,
+    animate,
     type Variants,
 } from 'framer-motion';
+import type { ClassValue } from "clsx";
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+
+// --- 辅助函数 ---
+
+/**
+ * 合并 Tailwind CSS 类名，无冲突。
+ * @param inputs - 要合并的类名。
+ * @returns {string} - 合并后的类名字符串。
+ */
+function cn(...inputs: ClassValue[]): string {
+    return twMerge(clsx(inputs));
+}
+
+// --- 英雄组件及其依赖项 ---
+
+/**
+ * HeroGeometric 组件是一个具有视觉吸引力的英雄部分。
+ * @param {object} props - 组件属性。
+ * @param {string} [props.title1] - 主标题的第一行。
+ * @param {string} [props.title2] - 主标题的第二行。
+ * @returns {JSX.Element} - 渲染后的英雄部分组件。
+ */
+function HeroGeometric({
+    title1 = "指标量化",
+    title2 = "动态分析模型",
+}: {
+    title1?: string;
+    title2?: string;
+}) {
+    const fadeUpVariants: Variants = {
+        hidden: { opacity: 0, y: 30 },
+        visible: (i: number) => ({
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 1,
+                delay: 0.5 + i * 0.2,
+                ease: [0.25, 0.4, 0.25, 1],
+            },
+        }),
+    };
+
+    return (
+        <div className="relative w-full flex items-center justify-center overflow-hidden">
+            {/* 内容 */}
+            <div className="relative z-10 container mx-auto px-4 md:px-6">
+                <div className="max-w-3xl mx-auto text-center">
+                    <motion.div
+                        custom={1}
+                        variants={fadeUpVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-6 md:mb-8 tracking-tight">
+                            <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
+                                {title1}
+                            </span>
+                            <br />
+                            <span style={{ color: '#0cf2a0' }}>
+                                {title2}
+                            </span>
+                        </h1>
+                    </motion.div>
+
+                    <motion.div
+                        custom={2}
+                        variants={fadeUpVariants}
+                        initial="hidden"
+                        animate="visible"
+                    >
+                        <p className="text-base sm:text-lg md:text-xl text-white mb-8 leading-relaxed font-light tracking-wide mx-auto px-4">
+                            本看板将您身体的各项关键信号，以客观、量化的方式清晰呈现，为您勾勒出一张精密的健康蓝图。这是一个由您主导的、不断精进的闭环健康管理系统。<br />让您在健康之路上，始终走在前沿。
+                        </p>
+                    </motion.div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * 这是最终导出的、合并后的英雄组件。
+ * 它渲染了 HeroGeometric 组件，并传入了特定的属性。
+ * @returns {JSX.Element} - 渲染后的演示组件。
+ */
+function DemoHeroGeometric() {
+    return (
+        <HeroGeometric
+            title1="指标量化"
+            title2="动态分析模型"
+        />
+    );
+}
+
+// --- 径向图表组件 ---
+
+interface AnimatedRadialChartProps {
+  value?: number;
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+  showLabels?: boolean;
+  duration?: number;
+}
+
+function AnimatedRadialChart({
+  value = 74,
+  size = 300,
+  strokeWidth: customStrokeWidth,
+  className,
+  showLabels = true,
+  duration = 2,
+}: AnimatedRadialChartProps) {
+  const strokeWidth = customStrokeWidth ?? Math.max(12, size * 0.06);
+  const radius = size * 0.35;
+  const center = size / 2;
+  const circumference = Math.PI * radius;
+  const innerLineRadius = radius - strokeWidth - 4;
+  const animatedValue = useMotionValue(0);
+  const offset = useTransform(animatedValue, [0, 100], [circumference, 0]);
+  const progressAngle = useTransform(animatedValue, [0, 100], [-Math.PI, 0]);
+  const innerRadius = radius - strokeWidth / 2;
+
+  useEffect(() => {
+    const controls = animate(animatedValue, value, {
+      duration,
+      ease: "easeOut",
+    });
+    return controls.stop;
+  }, [value, animatedValue, duration]);
+
+  const fontSize = Math.max(16, size * 0.1);
+  const labelFontSize = Math.max(12, size * 0.04);
+
+  return (
+    <div className={cn("relative", className)} style={{ width: size, height: size * 0.7 }}>
+      <svg width={size} height={size * 0.7} viewBox={`0 0 ${size} ${size * 0.7}`} className="overflow-visible">
+        <defs>
+          <linearGradient id={`baseGradient-${size}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+            <stop offset="50%" stopColor="#d1d5db" stopOpacity="0.7" />
+            <stop offset="100%" stopColor="#6b7280" stopOpacity="0.6" />
+          </linearGradient>
+          <linearGradient id={`progressGradient-${size}`} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#0cf2a0" />
+            <stop offset="100%" stopColor="#09d187" />
+          </linearGradient>
+          <linearGradient id={`textGradient-${size}`} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.7" />
+            <stop offset="50%" stopColor="#d1d5db" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#6b7280" stopOpacity="0.3" />
+          </linearGradient>
+          <filter id={`dropshadow-${size}`} x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000000" floodOpacity="0.3" />
+          </filter>
+        </defs>
+        <path d={`M ${center - innerLineRadius} ${center} A ${innerLineRadius} ${innerLineRadius} 0 0 1 ${center + innerLineRadius} ${center}`} fill="none" stroke="#6b7280" strokeWidth="1" strokeLinecap="butt" opacity="0.6" />
+        <path d={`M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`} fill="none" stroke={`url(#baseGradient-${size})`} strokeWidth={strokeWidth} strokeLinecap="butt" filter={`url(#dropshadow-${size})`} />
+        <motion.path d={`M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`} fill="none" stroke={`url(#progressGradient-${size})`} strokeWidth={strokeWidth} strokeLinecap="butt" strokeDasharray={circumference} strokeDashoffset={offset} filter={`url(#dropshadow-${size})`} />
+        <motion.line x1={useTransform(progressAngle, (angle) => center + Math.cos(angle) * innerRadius)} y1={useTransform(progressAngle, (angle) => center + Math.sin(angle) * innerRadius)} x2={useTransform(progressAngle, (angle) => center + Math.cos(angle) * innerRadius - Math.cos(angle) * 30)} y2={useTransform(progressAngle, (angle) => center + Math.sin(angle) * innerRadius - Math.sin(angle) * 30)} stroke={`url(#textGradient-${size})`} strokeWidth="1" strokeLinecap="butt" />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <motion.div className="font-bold tracking-tight mt-10" style={{ fontSize: `${fontSize}px` }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: duration * 0.75 }}>
+          <span style={{ background: "linear-gradient(to right, #ffffff, #9ca3af)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", }}>
+            <motion.span>{useTransform(animatedValue, (latest) => Math.round(latest))}</motion.span>%
+          </span>
+        </motion.div>
+      </div>
+      {showLabels && (
+        <>
+          <motion.div className="absolute text-gray-400 font-medium" style={{ fontSize: `${labelFontSize}px`, left: center - radius - 5, top: center + strokeWidth / 2, }} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: duration * 0.25 }} >
+            0%
+          </motion.div>
+          <motion.div className="absolute text-gray-400 font-medium" style={{ fontSize: `${labelFontSize}px`, left: center + radius - 20, top: center + strokeWidth / 2, }} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: duration * 0.25 }} >
+            100%
+          </motion.div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function RadialChartSection() {
+  const chartData = [
+    { value: 25 },
+    { value: 50 },
+    { value: 75 },
+    { value: 95 },
+  ];
+
+  return (
+    <div className="w-full py-16">
+        <div className="flex flex-wrap justify-center gap-8">
+            {chartData.map((chart, index) => (
+            <AnimatedRadialChart
+                key={index}
+                value={chart.value}
+                size={300}
+                strokeWidth={30}
+                showLabels={true}
+                duration={2}
+            />
+            ))}
+        </div>
+    </div>
+  );
+}
+
 
 // --- 类型定义 ---
 
@@ -285,7 +499,6 @@ const Page = () => {
     <div className="relative bg-[#111111] text-gray-300 min-h-screen flex flex-col overflow-x-hidden">
         {/* Canvas 背景 */}
         <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
-        {/* 移除: 渐变遮罩层 */}
 
         {/* 导航栏 */}
         <motion.header
@@ -344,9 +557,10 @@ const Page = () => {
             </AnimatePresence>
         </motion.header>
 
-        {/* 主内容区域 (已清空) */}
-        <main className="flex-grow flex flex-col items-center justify-center text-center px-4 pt-8 pb-16 relative z-10">
-            {/* Hero 区域内容已根据要求删除 */}
+        {/* 主内容区域 */}
+        <main className="flex-grow flex flex-col items-center justify-center text-center px-4 pt-24 pb-16 relative z-10">
+            <DemoHeroGeometric />
+            <RadialChartSection />
         </main>
 
     </div>
