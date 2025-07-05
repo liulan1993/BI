@@ -19,7 +19,7 @@ interface CustomTooltipProps {
     payload?: {
         name: string;
         value: string | number;
-        payload: any;
+        payload: HealthData;
         color: string;
         stroke: string;
     }[];

@@ -35,7 +35,7 @@ interface CustomTooltipProps {
     payload?: {
         name: string;
         value: string | number;
-        payload: any;
+        payload: ChartData;
     }[];
     label?: string | number;
 }
