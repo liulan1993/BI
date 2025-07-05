@@ -94,10 +94,10 @@ export default function VascularHealthDashboard() {
   return (
     <Card className="w-full h-full bg-white p-4 sm:p-6 rounded-xl shadow-lg">
       <CardContent className="p-0 h-full">
-        {/* 新增：使用 grid 实现左右布局 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-            {/* 左侧：所有图表 */}
-            <div className="flex flex-col gap-8">
+        {/* 修改：使用标准的10列网格系统，并确保在小屏幕上堆叠 */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-8 h-full">
+            {/* 左侧：所有图表 - 在大屏幕上占据7/10宽度 */}
+            <div className="lg:col-span-7 flex flex-col gap-8 min-w-0">
                 <div>
                   <h3 className="text-lg font-semibold mb-2" style={{ color: '#0cf2a0' }}>核心血压: 脉压 (PP) & 平均动脉压 (MAP)</h3>
                   <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -117,7 +117,7 @@ export default function VascularHealthDashboard() {
                     </ResponsiveContainer>
                   </ChartContainer>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                   <div>
                     <h3 className="text-lg font-semibold mb-2" style={{ color: '#0cf2a0' }}>外周血管: 踝臂指数 (ABI)</h3>
                     <ChartContainer config={chartConfig} className="h-[250px] w-full">
@@ -157,8 +157,8 @@ export default function VascularHealthDashboard() {
                 </div>
             </div>
 
-            {/* 右侧：改善指南 */}
-            <div className="h-full">
+            {/* 右侧：改善指南 - 在大屏幕上占据3/10宽度 */}
+            <div className="lg:col-span-3 h-full min-w-0">
                 <ImprovementGuide />
             </div>
         </div>

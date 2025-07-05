@@ -19,7 +19,8 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ data }) => {
 
     return (
         <div className="w-full h-full flex items-start justify-center">
-            <div className="w-full max-w-screen-2xl mx-auto grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8 items-start">
+            {/* 修改：使用 max-w-[90vw] 来实现一个更宽且响应式的布局 */}
+            <div className="w-full max-w-[90vw] mx-auto grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8 items-start">
                 {/* 左侧固定栏 */}
                 <div className="lg:sticky lg:top-24 self-start">
                     {/* 为按钮列表设置最大高度和内部滚动 */}
@@ -36,7 +37,7 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ data }) => {
                     </div>
                 </div>
 
-                {/* 右侧内容区 */}
+                {/* 右侧内容区 - 添加 min-w-0 来防止内容溢出 */}
                 <div className="min-w-0">
                     {typeof activeTabData?.content === 'string' ? (
                         <div className="w-full h-full rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center min-h-[400px]">
