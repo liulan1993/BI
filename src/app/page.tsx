@@ -114,6 +114,363 @@ function DemoHeroGeometric() {
     );
 }
 
+
+// --- 菜单栏相关组件和数据 ---
+
+// 辅助类：管理单个像素的逻辑
+class Pixel {
+    private ctx: CanvasRenderingContext2D;
+    private width: number;
+    private height: number;
+    private x: number;
+    private y: number;
+    private color: string;
+    private speed: number;
+    private size: number;
+    private sizeStep: number;
+    private minSize: number;
+    private maxSizeInteger: number;
+    private maxSize: number;
+    private delay: number;
+    private counter: number;
+    private counterStep: number;
+    public isIdle: boolean;
+    private isReverse: boolean;
+    private isShimmer: boolean;
+
+    constructor(
+        canvas: HTMLCanvasElement,
+        context: CanvasRenderingContext2D,
+        x: number,
+        y: number,
+        color: string,
+        speed: number,
+        delay: number,
+    ) {
+        this.width = canvas.width;
+        this.height = canvas.height;
+        this.ctx = context;
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.speed = this.getRandomValue(0.1, 0.9) * speed;
+        this.size = 0;
+        this.sizeStep = Math.random() * 0.4;
+        this.minSize = 0.5;
+        this.maxSizeInteger = 2;
+        this.maxSize = this.getRandomValue(this.minSize, this.maxSizeInteger);
+        this.delay = delay;
+        this.counter = 0;
+        this.counterStep = Math.random() * 4 + (this.width + this.height) * 0.01;
+        this.isIdle = false;
+        this.isReverse = false;
+        this.isShimmer = false;
+    }
+
+    private getRandomValue(min: number, max: number): number {
+        return Math.random() * (max - min) + min;
+    }
+
+    public draw(): void {
+        const centerOffset = this.maxSizeInteger * 0.5 - this.size * 0.5;
+        this.ctx.fillStyle = this.color;
+        this.ctx.fillRect(
+            this.x + centerOffset,
+            this.y + centerOffset,
+            this.size,
+            this.size,
+        );
+    }
+
+    public appear(): void {
+        this.isIdle = false;
+        if (this.counter <= this.delay) {
+            this.counter += this.counterStep;
+            return;
+        }
+        if (this.size >= this.maxSize) {
+            this.isShimmer = true;
+        }
+        if (this.isShimmer) {
+            this.shimmer();
+        } else {
+            this.size += this.sizeStep;
+        }
+        this.draw();
+    }
+
+    public disappear(): void {
+        this.isShimmer = false;
+        this.counter = 0;
+        if (this.size <= 0) {
+            this.isIdle = true;
+        } else {
+            this.size -= 0.1;
+        }
+        this.draw();
+    }
+
+    private shimmer(): void {
+        if (this.size >= this.maxSize) {
+            this.isReverse = true;
+        } else if (this.size <= this.minSize) {
+            this.isReverse = false;
+        }
+        if (this.isReverse) {
+            this.size -= this.speed;
+        } else {
+            this.size += this.speed;
+        }
+    }
+}
+
+// React 组件：PixelCanvas
+interface PixelCanvasProps {
+    gap?: number;
+    speed?: number;
+    colors?: string[];
+    variant?: "default" | "icon";
+    animationState: "appear" | "disappear";
+}
+
+const PixelCanvas: React.FC<PixelCanvasProps> = ({
+    gap = 5,
+    speed = 35,
+    colors = ["#f8fafc", "#f1f5f9", "#cbd5e1"],
+    variant = "default",
+    animationState,
+}) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const pixelsRef = useRef<Pixel[]>([]);
+    const animationFrameId = useRef<number | null>(null);
+    const lastTimeRef = useRef<number>(performance.now());
+    const timeInterval = 1000 / 60; // 60 FPS
+    
+    const reducedMotion = (typeof window !== 'undefined') ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
+    const finalSpeed = reducedMotion ? 0 : Math.max(0, Math.min(100, speed)) * 0.001;
+
+    const getDistanceToCenter = useCallback((x: number, y: number, canvas: HTMLCanvasElement) => {
+        const dpr = window.devicePixelRatio || 1;
+        const dx = x - (canvas.width / dpr) / 2;
+        const dy = y - (canvas.height / dpr) / 2;
+        return Math.sqrt(dx * dx + dy * dy);
+    }, []);
+
+    const getDistanceToBottomLeft = useCallback((x: number, y: number, canvas: HTMLCanvasElement) => {
+        const dpr = window.devicePixelRatio || 1;
+        const dx = x;
+        const dy = (canvas.height / dpr) - y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }, []);
+
+    const createPixels = useCallback(() => {
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext("2d");
+        if (!canvas || !ctx) return;
+
+        pixelsRef.current = [];
+        const finalGap = Math.max(4, Math.min(50, gap));
+        
+        const dpr = window.devicePixelRatio || 1;
+        const scaledWidth = canvas.width / dpr;
+        const scaledHeight = canvas.height / dpr;
+
+        for (let x = 0; x < scaledWidth; x += finalGap) {
+            for (let y = 0; y < scaledHeight; y += finalGap) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                let delay = 0;
+
+                if (variant === "icon") {
+                    delay = reducedMotion ? 0 : getDistanceToCenter(x, y, canvas);
+                } else {
+                    delay = reducedMotion ? 0 : getDistanceToBottomLeft(x, y, canvas);
+                }
+
+                pixelsRef.current.push(
+                    new Pixel(canvas, ctx, x, y, color, finalSpeed, delay)
+                );
+            }
+        }
+    }, [gap, colors, variant, reducedMotion, finalSpeed, getDistanceToCenter, getDistanceToBottomLeft]);
+
+    const handleResize = useCallback(() => {
+        const canvas = canvasRef.current;
+        const container = canvas?.parentElement;
+        if (!canvas || !container) return;
+
+        const rect = container.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+            ctx.scale(dpr, dpr);
+        }
+
+        createPixels();
+    }, [createPixels]);
+
+    useEffect(() => {
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [handleResize]);
+    
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext("2d");
+
+        const animate = () => {
+            animationFrameId.current = requestAnimationFrame(animate);
+
+            const now = performance.now();
+            const elapsed = now - lastTimeRef.current;
+
+            if (elapsed < timeInterval) return;
+            lastTimeRef.current = now - (elapsed % timeInterval);
+
+            if (!ctx || !canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+
+            let allIdle = true;
+            for (const pixel of pixelsRef.current) {
+                pixel[animationState]();
+                if (!pixel.isIdle) {
+                    allIdle = false;
+                }
+            }
+
+            if (allIdle && animationState === 'disappear' && animationFrameId.current) {
+                cancelAnimationFrame(animationFrameId.current);
+                animationFrameId.current = null;
+            }
+        };
+
+        if (animationFrameId.current) {
+            cancelAnimationFrame(animationFrameId.current);
+        }
+        animationFrameId.current = requestAnimationFrame(animate);
+
+        return () => {
+            if (animationFrameId.current) {
+                cancelAnimationFrame(animationFrameId.current);
+            }
+        };
+    }, [animationState, timeInterval]);
+
+    return <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', width: '100%', height: '100%' }} />;
+};
+
+// 标签按钮组件
+interface TabButtonProps {
+    isActive: boolean;
+    onClick: () => void;
+    children: React.ReactNode;
+}
+
+const TabButton: React.FC<TabButtonProps> = ({ isActive, onClick, children }) => {
+    const buttonClasses = `
+        group relative w-full h-[50px] flex-shrink-0 
+        border rounded-full 
+        transition-colors duration-200 
+        focus:outline-none
+        ${isActive ? 'border-[#0cf2a0]' : 'border-gray-600'}
+    `;
+
+    return (
+        <button
+            onClick={onClick}
+            className={buttonClasses.trim().replace(/\s+/g, ' ')}
+            style={{ "--active-color": "#0cf2a0" } as React.CSSProperties}
+        >
+            <PixelCanvas
+                gap={10}
+                speed={25}
+                colors={["#056b46", "#08a169", "#0cf2a0"]}
+                variant="icon"
+                animationState={isActive ? "appear" : "disappear"}
+            />
+            <div className="relative z-10 h-full w-full flex items-center justify-center p-2">
+                <span className={`text-center text-sm font-bold transition-all duration-300 ease-out ${isActive ? 'text-[var(--active-color)] scale-105' : 'text-gray-300'}`}>
+                    {children}
+                </span>
+            </div>
+        </button>
+    );
+};
+
+// --- 四个不同领域的标签页数据 ---
+
+const cardiovascularMetabolicData = [
+    { id: 'aip', title: '血浆动脉粥样硬化指数 (AIP)', content: '血浆动脉粥样硬化指数 (AIP) 的内容展示区。' },
+    { id: 'pp', title: '脉压 (PP)', content: '脉压 (PP) 的内容展示区。' },
+    { id: 'map', title: '平均动脉压 (MAP)', content: '平均动脉压 (MAP) 的内容展示区。' },
+    { id: 'homair', title: 'HOMA-IR (稳态模型胰岛素抵抗指数)', content: 'HOMA-IR (稳态模型胰岛素抵抗指数) 的内容展示区。' },
+    { id: 'lap', title: 'LAP (脂质蓄积产物)', content: 'LAP (脂质蓄积产物) 的内容展示区。' },
+    { id: 'tyg', title: 'TyG (甘油三酯-葡萄糖指数)', content: 'TyG (甘油三酯-葡萄糖指数) 的内容展示区。' },
+];
+
+const inflammationImmunityNutritionData = [
+    { id: 'nlr', title: '中性粒细胞/淋巴细胞比值(NLR)', content: '中性粒细胞/淋巴细胞比值 (NLR) 的内容展示区。' },
+    { id: 'pni', title: 'PNI (预后营养指数)', content: 'PNI (预后营养指数) 的内容展示区。' },
+    { id: 'siri', title: 'SIRI (全身炎症反应指数)', content: 'SIRI (全身炎症反应指数) 的内容展示区。' },
+    { id: 'mpv', title: 'MPV (平均血小板体积)', content: 'MPV (平均血小板体积) 的内容展示区。' },
+    { id: 'rdw', title: 'RDW (红细胞分布宽度)', content: 'RDW (红细胞分布宽度) 的内容展示区。' },
+];
+
+const multiOrganFunctionData = [
+    { id: 'fib4', title: 'FIB-4 (肝纤维化指数)', content: 'FIB-4 (肝纤维化指数) 的内容展示区。' },
+    { id: 'tbi', title: 'TBi (总胆红素指数)', content: 'TBi (总胆红素指数) 的内容展示区。' },
+    { id: 'egfr', title: 'eGFR (估算肾小球滤过率)', content: 'eGFR (估算肾小球滤过率) 的内容展示区。' },
+    { id: 'ucs', title: 'UCS (尿酸/肌酐比值)', content: 'UCS (尿酸/肌酐比值) 的内容展示区。' },
+    { id: 'uacr', title: 'UACR (尿白蛋白/肌酐比值)', content: 'UACR (尿白蛋白/肌酐比值) 的内容展示区。' },
+];
+
+const integrativeMedicineData = [
+    { id: 'ag', title: 'AG (阴离子间隙)', content: 'AG (阴离子间隙) 的内容展示区。' },
+    { id: 'stress', title: '压力与皮质醇水平', content: '压力与皮质醇水平的内容展示区。' },
+    { id: 'sleep', title: '睡眠质量指数', content: '睡眠质量指数的内容展示区。' },
+    { id: 'microbiome', title: '肠道菌群多样性', content: '肠道菌群多样性的内容展示区。' },
+];
+
+
+// 主组件：可重用的交互式菜单
+function InteractiveMenu({ data }: { data: { id: string; title: string; content: string }[] }) {
+    const [activeTab, setActiveTab] = useState(data[0].id);
+    const activeTabData = data.find(tab => tab.id === activeTab);
+
+    return (
+        <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 h-auto">
+                {/* 左侧标签栏 */}
+                <div className="lg:col-span-1 flex flex-col space-y-4 overflow-y-auto pr-4 h-[500px] self-center">
+                    {data.map(tab => (
+                        <TabButton
+                            key={tab.id}
+                            isActive={activeTab === tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                        >
+                            {tab.title}
+                        </TabButton>
+                    ))}
+                </div>
+
+                {/* 右侧内容区 */}
+                <div className="lg:col-span-2 rounded-2xl p-8 h-[500px] flex items-center justify-center">
+                    <div className="text-center">
+                        <h2 className="text-2xl font-bold text-gray-100 mb-4">{activeTabData?.title}</h2>
+                        <p className="text-gray-300">{activeTabData?.content}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // --- 径向图表组件 ---
 
 interface AnimatedRadialChartProps {
@@ -198,10 +555,10 @@ function HealthMetricsTabs() {
   ];
 
   const tabContent = [
-    <div className="text-white text-lg min-h-[900px]">页面模块 1: 心血管-代谢域的详细数据和分析。</div>,
-    <div className="text-white text-lg min-h-[900px]">页面模块 2: 炎症-免疫-营养域的详细数据和分析。</div>,
-    <div className="text-white text-lg min-h-[900px]">页面模块 3: 多器官功能域的详细数据和分析。</div>,
-    <div className="text-white text-lg min-h-[900px]">页面模块 4: 整合医学与跨领域的详细数据和分析。</div>,
+    <InteractiveMenu data={cardiovascularMetabolicData} />,
+    <InteractiveMenu data={inflammationImmunityNutritionData} />,
+    <InteractiveMenu data={multiOrganFunctionData} />,
+    <InteractiveMenu data={integrativeMedicineData} />,
   ];
 
   return (
@@ -237,7 +594,7 @@ function HealthMetricsTabs() {
         </div>
 
         {/* Tabs Content Panel */}
-        <div className="mt-12 mx-auto w-full max-w-[90vw] p-8 bg-gray-700 rounded-lg">
+        <div className="mt-12 mx-auto w-full max-w-7xl rounded-lg min-h-[600px]">
             <AnimatePresence mode="wait">
                 <motion.div
                     key={activeTab}
@@ -522,7 +879,7 @@ const Page = () => {
 
   // --- JSX 渲染 ---
   return (
-    <div className="relative bg-[#111111] text-gray-300 h-screen flex flex-col overflow-hidden">
+    <div className="relative bg-[#111111] text-gray-300 min-h-screen flex flex-col">
         {/* Canvas 背景 */}
         <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
 
@@ -587,7 +944,7 @@ const Page = () => {
         </motion.header>
 
         {/* 主内容区域 */}
-        <main className="flex-grow overflow-y-auto relative z-10 px-4 pt-24 pb-16">
+        <main className="flex-grow relative z-10 px-4 pt-24 pb-16">
             <div className="flex flex-col items-center text-center">
                 <DemoHeroGeometric />
                 <HealthMetricsTabs />
