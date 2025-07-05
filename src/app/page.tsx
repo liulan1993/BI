@@ -158,11 +158,6 @@ function AnimatedRadialChart({
     <div className={cn("relative", className)} style={{ width: size, height: size * 0.7 }}>
       <svg width={size} height={size * 0.7} viewBox={`0 0 ${size} ${size * 0.7}`} className="overflow-visible">
         <defs>
-          <linearGradient id={`baseGradient-${size}`} x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
-            <stop offset="50%" stopColor="#d1d5db" stopOpacity="0.7" />
-            <stop offset="100%" stopColor="#6b7280" stopOpacity="0.6" />
-          </linearGradient>
           <linearGradient id={`progressGradient-${size}`} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#0cf2a0" />
             <stop offset="100%" stopColor="#09d187" />
@@ -177,7 +172,7 @@ function AnimatedRadialChart({
           </filter>
         </defs>
         <path d={`M ${center - innerLineRadius} ${center} A ${innerLineRadius} ${innerLineRadius} 0 0 1 ${center + innerLineRadius} ${center}`} fill="none" stroke="#6b7280" strokeWidth="1" strokeLinecap="butt" opacity="0.6" />
-        <path d={`M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`} fill="none" stroke={`url(#baseGradient-${size})`} strokeWidth={strokeWidth} strokeLinecap="butt" filter={`url(#dropshadow-${size})`} />
+        <path d={`M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`} fill="none" stroke="#374151" strokeWidth={strokeWidth} strokeLinecap="butt" filter={`url(#dropshadow-${size})`} />
         <motion.path d={`M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`} fill="none" stroke={`url(#progressGradient-${size})`} strokeWidth={strokeWidth} strokeLinecap="butt" strokeDasharray={circumference} strokeDashoffset={offset} filter={`url(#dropshadow-${size})`} />
         <motion.line x1={useTransform(progressAngle, (angle) => center + Math.cos(angle) * innerRadius)} y1={useTransform(progressAngle, (angle) => center + Math.sin(angle) * innerRadius)} x2={useTransform(progressAngle, (angle) => center + Math.cos(angle) * innerRadius - Math.cos(angle) * 30)} y2={useTransform(progressAngle, (angle) => center + Math.sin(angle) * innerRadius - Math.sin(angle) * 30)} stroke={`url(#textGradient-${size})`} strokeWidth="1" strokeLinecap="butt" />
       </svg>
@@ -204,24 +199,28 @@ function AnimatedRadialChart({
 
 function RadialChartSection() {
   const chartData = [
-    { value: 25 },
-    { value: 50 },
-    { value: 75 },
-    { value: 95 },
+    { title: "体能指数", value: 25 },
+    { title: "恢复指数", value: 50 },
+    { title: "睡眠质量", value: 75 },
+    { title: "压力水平", value: 95 },
   ];
 
   return (
     <div className="w-full py-16">
         <div className="flex flex-wrap justify-center gap-8">
             {chartData.map((chart, index) => (
-            <AnimatedRadialChart
-                key={index}
-                value={chart.value}
-                size={300}
-                strokeWidth={30}
-                showLabels={true}
-                duration={2}
-            />
+                <div key={index} className="flex flex-col items-center gap-2">
+                    <h3 className="text-3xl font-bold text-white">
+                        {chart.title}
+                    </h3>
+                    <AnimatedRadialChart
+                        value={chart.value}
+                        size={300}
+                        strokeWidth={30}
+                        showLabels={true}
+                        duration={2}
+                    />
+                </div>
             ))}
         </div>
     </div>
