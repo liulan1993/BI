@@ -18,37 +18,33 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ data }) => {
     const activeTabData = data.find(tab => tab.id === activeTab);
 
     return (
-        <div className="w-full h-full flex items-center justify-center">
-            <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 h-auto">
-                {/* 左侧标签栏 */}
-                <div className="lg:col-span-1 flex flex-col space-y-4 pr-2 h-[450px] self-start overflow-y-auto">
-                    {data.map(tab => (
-                        <TabButton
-                            key={tab.id}
-                            isActive={activeTab === tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                        >
-                            {tab.title}
-                        </TabButton>
-                    ))}
+        <div className="w-full h-full flex items-start justify-center">
+            <div className="w-full max-w-screen-2xl mx-auto grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-8 items-start">
+                {/* 左侧固定栏 */}
+                <div className="lg:sticky lg:top-24 self-start">
+                    {/* 为按钮列表设置最大高度和内部滚动 */}
+                    <div className="flex flex-col space-y-4 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2">
+                        {data.map(tab => (
+                            <TabButton
+                                key={tab.id}
+                                isActive={activeTab === tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                            >
+                                {tab.title}
+                            </TabButton>
+                        ))}
+                    </div>
                 </div>
 
                 {/* 右侧内容区 */}
-                <div className="lg:col-span-2 rounded-2xl h-[450px] flex flex-col">
-                    <div className="overflow-y-auto w-full h-full pr-4">
-                        <h2 className="text-2xl font-bold text-gray-100 mb-4 text-center sticky top-0 bg-[#111111] py-4">
-                            {activeTabData?.title}
-                        </h2>
-                        <div className="w-full h-full flex-grow">
-                            {typeof activeTabData?.content === 'string' ? (
-                                <div className="w-full min-h-[350px] rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center">
-                                    <p className="text-gray-500">{activeTabData.content}</p>
-                                </div>
-                            ) : (
-                                activeTabData?.content
-                            )}
+                <div className="min-w-0">
+                    {typeof activeTabData?.content === 'string' ? (
+                        <div className="w-full h-full rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center min-h-[400px]">
+                            <p className="text-gray-500">{activeTabData.content}</p>
                         </div>
-                    </div>
+                    ) : (
+                        activeTabData?.content
+                    )}
                 </div>
             </div>
         </div>
