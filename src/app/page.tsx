@@ -137,11 +137,8 @@ function AnimatedRadialChart({
   const radius = size * 0.35;
   const center = size / 2;
   const circumference = Math.PI * radius;
-  const innerLineRadius = radius - strokeWidth - 4;
   const animatedValue = useMotionValue(0);
   const offset = useTransform(animatedValue, [0, 100], [circumference, 0]);
-  const progressAngle = useTransform(animatedValue, [0, 100], [-Math.PI, 0]);
-  const innerRadius = radius - strokeWidth / 2;
 
   useEffect(() => {
     const controls = animate(animatedValue, value, {
@@ -162,19 +159,12 @@ function AnimatedRadialChart({
             <stop offset="0%" stopColor="#0cf2a0" />
             <stop offset="100%" stopColor="#09d187" />
           </linearGradient>
-          <linearGradient id={`textGradient-${size}`} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.7" />
-            <stop offset="50%" stopColor="#d1d5db" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#6b7280" stopOpacity="0.3" />
-          </linearGradient>
           <filter id={`dropshadow-${size}`} x="-50%" y="-50%" width="200%" height="200%">
             <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000000" floodOpacity="0.3" />
           </filter>
         </defs>
-        <path d={`M ${center - innerLineRadius} ${center} A ${innerLineRadius} ${innerLineRadius} 0 0 1 ${center + innerLineRadius} ${center}`} fill="none" stroke="#6b7280" strokeWidth="1" strokeLinecap="butt" opacity="0.6" />
         <path d={`M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`} fill="none" stroke="#374151" strokeWidth={strokeWidth} strokeLinecap="butt" filter={`url(#dropshadow-${size})`} />
         <motion.path d={`M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`} fill="none" stroke={`url(#progressGradient-${size})`} strokeWidth={strokeWidth} strokeLinecap="butt" strokeDasharray={circumference} strokeDashoffset={offset} filter={`url(#dropshadow-${size})`} />
-        <motion.line x1={useTransform(progressAngle, (angle) => center + Math.cos(angle) * innerRadius)} y1={useTransform(progressAngle, (angle) => center + Math.sin(angle) * innerRadius)} x2={useTransform(progressAngle, (angle) => center + Math.cos(angle) * innerRadius - Math.cos(angle) * 30)} y2={useTransform(progressAngle, (angle) => center + Math.sin(angle) * innerRadius - Math.sin(angle) * 30)} stroke={`url(#textGradient-${size})`} strokeWidth="1" strokeLinecap="butt" />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         <motion.div className="font-bold tracking-tight mt-10" style={{ fontSize: `${fontSize}px` }} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: duration * 0.75 }}>
@@ -197,22 +187,44 @@ function AnimatedRadialChart({
   );
 }
 
-function RadialChartSection() {
+function HealthMetricsTabs() {
+  const [activeTab, setActiveTab] = useState(0);
+
   const chartData = [
-    { title: "心血管-代谢域", value: 25 },
-    { title: "炎症-免疫-营养域", value: 50 },
-    { title: "多器官功能域", value: 75 },
-    { title: "整合医学与跨领域", value: 95 },
+    { title: "心血管-代谢域", value: 97 },
+    { title: "炎症-免疫-营养域", value: 95 },
+    { title: "多器官功能域", value: 90 },
+    { title: "整合医学与跨领域", value: 93 },
+  ];
+
+  const tabContent = [
+    <div className="text-white text-lg min-h-[900px]">页面模块 1: 心血管-代谢域的详细数据和分析。</div>,
+    <div className="text-white text-lg min-h-[900px]">页面模块 2: 炎症-免疫-营养域的详细数据和分析。</div>,
+    <div className="text-white text-lg min-h-[900px]">页面模块 3: 多器官功能域的详细数据和分析。</div>,
+    <div className="text-white text-lg min-h-[900px]">页面模块 4: 整合医学与跨领域的详细数据和分析。</div>,
   ];
 
   return (
     <div className="w-full py-16">
+        {/* Tabs Header */}
         <div className="flex flex-wrap justify-center gap-8">
             {chartData.map((chart, index) => (
-                <div key={index} className="flex flex-col items-center gap-2">
-                    <h3 className="text-3xl font-bold text-white">
-                        {chart.title}
-                    </h3>
+                <div
+                    key={index}
+                    className="flex flex-col items-center gap-2 cursor-pointer"
+                    onClick={() => setActiveTab(index)}
+                >
+                    <div className="relative py-2">
+                        <h3 className="text-3xl font-bold text-white">
+                            {chart.title}
+                        </h3>
+                        {activeTab === index && (
+                            <motion.div
+                                className="absolute bottom-[-2px] left-1/4 w-1/2 h-0.5 bg-[#0cf2a0]"
+                                layoutId="underline"
+                            />
+                        )}
+                    </div>
                     <AnimatedRadialChart
                         value={chart.value}
                         size={300}
@@ -222,6 +234,21 @@ function RadialChartSection() {
                     />
                 </div>
             ))}
+        </div>
+
+        {/* Tabs Content Panel */}
+        <div className="mt-12 mx-auto w-full max-w-[90vw] p-8 bg-gray-700 rounded-lg">
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={activeTab}
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -10, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    {tabContent[activeTab]}
+                </motion.div>
+            </AnimatePresence>
         </div>
     </div>
   );
@@ -495,7 +522,7 @@ const Page = () => {
 
   // --- JSX 渲染 ---
   return (
-    <div className="relative bg-[#111111] text-gray-300 min-h-screen flex flex-col overflow-x-hidden">
+    <div className="relative bg-[#111111] text-gray-300 h-screen flex flex-col overflow-hidden">
         {/* Canvas 背景 */}
         <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
 
@@ -547,7 +574,10 @@ const Page = () => {
                 {isMobileMenuOpen && (
                     <motion.div
                         key="mobile-menu"
-                        variants={mobileMenuVariants} initial="hidden" animate="visible" exit="exit"
+                        variants={mobileMenuVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
                         className="md:hidden absolute top-full left-0 right-0 bg-[#111111]/95 backdrop-blur-sm shadow-lg py-4 border-t border-gray-800/50"
                     >
                        {/* 移动端导航链接已根据要求删除 */}
@@ -557,9 +587,11 @@ const Page = () => {
         </motion.header>
 
         {/* 主内容区域 */}
-        <main className="flex-grow flex flex-col items-center justify-center text-center px-4 pt-24 pb-16 relative z-10">
-            <DemoHeroGeometric />
-            <RadialChartSection />
+        <main className="flex-grow overflow-y-auto relative z-10 px-4 pt-24 pb-16">
+            <div className="flex flex-col items-center text-center">
+                <DemoHeroGeometric />
+                <HealthMetricsTabs />
+            </div>
         </main>
 
     </div>
