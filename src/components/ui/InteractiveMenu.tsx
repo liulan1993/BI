@@ -6,7 +6,7 @@ import TabButton from './TabButton';
 interface TabData {
     id: string;
     title: string;
-    content: string;
+    content: React.ReactNode; // 允许内容是组件
 }
 
 interface InteractiveMenuProps {
@@ -34,11 +34,19 @@ const InteractiveMenu: React.FC<InteractiveMenuProps> = ({ data }) => {
                 </div>
 
                 {/* 右侧内容区 */}
-                <div className="lg:col-span-2 rounded-2xl p-8 h-[450px] flex items-center justify-center">
-                     <div className="text-center w-full h-full flex flex-col items-center justify-center">
-                        <h2 className="text-2xl font-bold text-gray-100 mb-4">{activeTabData?.title}</h2>
-                        <div className="w-full h-full flex-grow rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center">
-                            <p className="text-gray-500">{activeTabData?.content}</p>
+                <div className="lg:col-span-2 rounded-2xl h-[450px] flex flex-col">
+                    <div className="overflow-y-auto w-full h-full pr-4">
+                        <h2 className="text-2xl font-bold text-gray-100 mb-4 text-center sticky top-0 bg-[#111111] py-4">
+                            {activeTabData?.title}
+                        </h2>
+                        <div className="w-full h-full flex-grow">
+                            {typeof activeTabData?.content === 'string' ? (
+                                <div className="w-full min-h-[350px] rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center">
+                                    <p className="text-gray-500">{activeTabData.content}</p>
+                                </div>
+                            ) : (
+                                activeTabData?.content
+                            )}
                         </div>
                     </div>
                 </div>

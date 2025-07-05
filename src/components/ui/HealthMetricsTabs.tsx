@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedRadialChart from './AnimatedRadialChart';
 import InteractiveMenu from './InteractiveMenu';
+import VascularHealthDashboard from './VascularHealthDashboard'; // 导入新图表
 
 // --- 四个不同领域的标签页数据 ---
 const cardiovascularMetabolicData = [
-   { id: '1', title: '核心血压与血管健康', content: '图表展示区' },
+   { id: '1', title: '核心血压与血管健康', content: <VascularHealthDashboard /> }, // 使用新组件
    { id: '2', title: '动脉粥样硬化风险矩阵', content: '图表展示区' },
    { id: '3', title: '心脏结构与功能快照', content: '图表展示区' },
    { id: '4', title: '心脏泵血效率与电生理', content: '图表展示区' },
