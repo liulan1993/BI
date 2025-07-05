@@ -1,9 +1,23 @@
 "use client"
 
 import React from 'react';
+// 移除了 TooltipProps，因为我们将手动定义它以解决类型冲突
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceArea } from 'recharts';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ChartConfig, ChartContainer } from "@/components/ui/chart";
+
+// 手动定义自定义工具提示的属性类型
+// 这可以避免因 recharts 版本差异导致的类型问题
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: string | number;
+    stroke: string;
+    dataKey: string;
+  }>;
+  label?: string | number;
+}
 
 // 模拟多年的季度健康数据
 const healthData = [
@@ -30,14 +44,14 @@ const chartConfig = {
   abnormalRange: { color: "rgba(229, 62, 62, 0.2)" },
 } satisfies ChartConfig;
 
-// 自定义图表提示框内容
-const CustomTooltip = ({ active, payload, label }: any) => {
+// 自定义图表提示框内容 - 使用手动定义的 Props 类型
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className="p-2 text-sm bg-white border rounded-lg shadow-lg dark:bg-zinc-800 dark:border-zinc-700">
         <p className="font-bold text-black dark:text-white">{`${label}`}</p>
-        {payload.map((pld: any, index: number) => (
-          <p key={index} style={{ color: pld.stroke }}>
+        {payload.map((pld) => (
+          <p key={pld.dataKey} style={{ color: pld.stroke }}>
             {`${pld.name}: ${pld.value}`}
           </p>
         ))}
