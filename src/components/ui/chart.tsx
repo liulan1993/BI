@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-import type { Payload } from "recharts/types/component/DefaultTooltipContent"
+// 移除了未使用的 Payload 类型导入以解决 @typescript-eslint/no-unused-vars 错误
+// import type { Payload } from "recharts/types/component/DefaultTooltipContent"
 
 import { cn } from "@/lib/utils"
 
@@ -104,24 +105,37 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
+// 为 Tooltip 和 Legend 的 payload item 定义一个明确的类型
+type PayloadItem = {
+  name: string
+  value: number | string
+  color?: string
+  dataKey?: string
+  payload: {
+    fill?: string
+    [key: string]: unknown
+  }
+  [key: string]: unknown
+}
+
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
-    React.ComponentProps<typeof RechartsPrimitive.Tooltip> & {
+    Omit<React.ComponentProps<typeof RechartsPrimitive.Tooltip>, "content"> & {
       indicator?: "dot" | "line" | "dashed"
       hideLabel?: boolean
       hideIndicator?: boolean
       label?: string
-      labelFormatter?: (label: string, payload: any[]) => React.ReactNode
+      labelFormatter?: (label: string, payload: PayloadItem[]) => React.ReactNode
       labelClassName?: string
       formatter?: (
-        value: any,
-        name: any,
-        item: any,
+        value: number | string,
+        name: string,
+        item: PayloadItem,
         index: number,
-        payload: any[]
+        payload: PayloadItem[]
       ) => React.ReactNode
-      payload?: any[]
+      payload?: PayloadItem[]
     }
 >(
   (
@@ -147,7 +161,7 @@ const ChartTooltipContent = React.forwardRef<
       }
 
       const [item] = payload
-      const itemConfig = getPayloadConfigFromPayload(config, item, item.dataKey)
+      const itemConfig = getPayloadConfigFromPayload(config, item, item.dataKey || item.name)
 
       const value = labelFormatter
         ? labelFormatter(label || "", payload)
@@ -176,17 +190,18 @@ const ChartTooltipContent = React.forwardRef<
       >
         {!nestLabel ? tooltipLabel : null}
         <div className="grid gap-1.5">
-          {payload.map((item: any, index: number) => {
+          {payload.map((item, index) => {
             const itemConfig = getPayloadConfigFromPayload(
               config,
               item,
-              item.dataKey
+              item.dataKey || item.name
             )
             const indicatorColor = item.color || item.payload.fill
 
             return (
               <div
-                key={item.dataKey}
+                // 使用 index 确保 key 的唯一性和有效性
+                key={`${item.dataKey}-${index}`}
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
@@ -234,7 +249,7 @@ const ChartTooltipContent = React.forwardRef<
                       </div>
                       {item.value && (
                         <span className="font-mono font-medium tabular-nums text-foreground">
-                          {item.value.toLocaleString()}
+                          {typeof item.value === 'number' ? item.value.toLocaleString() : item.value}
                         </span>
                       )}
                     </div>
@@ -256,7 +271,7 @@ const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
     Pick<RechartsPrimitive.LegendProps, "verticalAlign"> & {
-      payload?: any[]
+      payload?: PayloadItem[]
       hideIcon?: boolean
       nameKey?: string
     }
@@ -276,13 +291,14 @@ const ChartLegendContent = React.forwardRef<
         className
       )}
     >
-      {payload.map((item: any) => {
+      {payload.map((item, index) => {
         const key = `${nameKey || item.dataKey || "value"}`
         const itemConfig = getPayloadConfigFromPayload(config, item, key)
 
         return (
           <div
-            key={item.value}
+            // 使用 index 确保 key 的唯一性和有效性
+            key={`legend-${item.value}-${index}`}
             className={cn(
               "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
             )}
@@ -309,7 +325,7 @@ ChartLegendContent.displayName = "ChartLegendContent"
 // Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(
   config: ChartConfig,
-  payload: any,
+  payload: PayloadItem,
   key: string
 ) {
   if (typeof payload !== "object" || payload === null) {
@@ -333,11 +349,9 @@ function getPayloadConfigFromPayload(
   } else if (
     payloadPayload &&
     key in payloadPayload &&
-    typeof payloadPayload[key as keyof typeof payloadPayload] === "string"
+    typeof (payloadPayload as { [key: string]: unknown })[key] === "string"
   ) {
-    configLabelKey = payloadPayload[
-      key as keyof typeof payloadPayload
-    ] as string
+    configLabelKey = (payloadPayload as { [key: string]: string })[key]
   }
 
   return configLabelKey in config
