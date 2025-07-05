@@ -199,10 +199,10 @@ function AnimatedRadialChart({
 
 function RadialChartSection() {
   const chartData = [
-    { title: "体能指数", value: 25 },
-    { title: "恢复指数", value: 50 },
-    { title: "睡眠质量", value: 75 },
-    { title: "压力水平", value: 95 },
+    { title: "心血管-代谢域", value: 25 },
+    { title: "炎症-免疫-营养域", value: 50 },
+    { title: "多器官功能域", value: 75 },
+    { title: "整合医学与跨领域", value: 95 },
   ];
 
   return (
