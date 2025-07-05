@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
+import type { Payload } from "recharts/types/component/DefaultTooltipContent"
 
 import { cn } from "@/lib/utils"
 
@@ -120,7 +121,7 @@ const ChartTooltipContent = React.forwardRef<
         index: number,
         payload: any[]
       ) => React.ReactNode
-      payload?: any[] // Explicitly define payload as an array of any
+      payload?: any[]
     }
 >(
   (
@@ -141,7 +142,7 @@ const ChartTooltipContent = React.forwardRef<
     const { config } = useChart()
 
     const tooltipLabel = React.useMemo(() => {
-      if (hideLabel || !payload || !payload.length) {
+      if (hideLabel || !payload || payload.length === 0) {
         return null
       }
 
@@ -159,7 +160,7 @@ const ChartTooltipContent = React.forwardRef<
       return <div className={cn("font-medium", labelClassName)}>{value}</div>
     }, [label, labelFormatter, payload, hideLabel, labelClassName, config])
 
-    if (!active || !payload || !payload.length) {
+    if (!active || !payload || payload.length === 0) {
       return null
     }
 
@@ -255,14 +256,14 @@ const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
     Pick<RechartsPrimitive.LegendProps, "verticalAlign"> & {
-      payload?: any[] // Explicitly define payload as an array of any
+      payload?: any[]
       hideIcon?: boolean
       nameKey?: string
     }
 >(({ className, hideIcon = false, payload, verticalAlign = "bottom", nameKey }, ref) => {
   const { config } = useChart()
 
-  if (!payload || !payload.length) {
+  if (!payload || payload.length === 0) {
     return null
   }
 
