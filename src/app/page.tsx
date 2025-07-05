@@ -406,35 +406,49 @@ const TabButton: React.FC<TabButtonProps> = ({ isActive, onClick, children }) =>
 // --- 四个不同领域的标签页数据 ---
 
 const cardiovascularMetabolicData = [
-    { id: 'aip', title: '血浆动脉粥样硬化指数 (AIP)', content: '血浆动脉粥样硬化指数 (AIP) 的内容展示区。' },
-    { id: 'pp', title: '脉压 (PP)', content: '脉压 (PP) 的内容展示区。' },
-    { id: 'map', title: '平均动脉压 (MAP)', content: '平均动脉压 (MAP) 的内容展示区。' },
-    { id: 'homair', title: 'HOMA-IR (稳态模型胰岛素抵抗指数)', content: 'HOMA-IR (稳态模型胰岛素抵抗指数) 的内容展示区。' },
-    { id: 'lap', title: 'LAP (脂质蓄积产物)', content: 'LAP (脂质蓄积产物) 的内容展示区。' },
-    { id: 'tyg', title: 'TyG (甘油三酯-葡萄糖指数)', content: 'TyG (甘油三酯-葡萄糖指数) 的内容展示区。' },
+    { id: 'aip', title: '血浆动脉粥样硬化指数 (AIP)', content: '血浆动脉粥样硬化指数 (AIP) 的图表展示区。' },
+    { id: 'pp', title: '脉压 (PP)', content: '脉压 (PP) 的图表展示区。' },
+    { id: 'map', title: '平均动脉压 (MAP)', content: '平均动脉压 (MAP) 的图表展示区。' },
+    { id: 'homair', title: 'HOMA-IR (稳态模型胰岛素抵抗指数)', content: 'HOMA-IR (稳态模型胰岛素抵抗指数) 的图表展示区。' },
+    { id: 'tyg', title: 'TyG (甘油三酯-葡萄糖指数)', content: 'TyG (甘油三酯-葡萄糖指数) 的图表展示区。' },
+    { id: 'deritis', title: 'De Ritis比值(AST/ALT Ratio)', content: 'De Ritis比值(AST/ALT Ratio) 的图表展示区。' },
+    { id: 'mentzer', title: 'Mentzer指数(Mentzer Index)', content: 'Mentzer指数(Mentzer Index) 的图表展示区。' },
+    { id: 'whtr', title: '腰高比(WHtR)', content: '腰高比(WHtR) 的图表展示区。' },
+    { id: 'smi', title: '骨骼肌质量指数(SMI)', content: '骨骼肌质量指数(SMI) 的图表展示区。' },
+    { id: 'psa', title: '游离/总前列腺特异性抗原比值', content: '游离/总前列腺特异性抗原比值 的图表展示区。' },
 ];
 
 const inflammationImmunityNutritionData = [
-    { id: 'nlr', title: '中性粒细胞/淋巴细胞比值(NLR)', content: '中性粒细胞/淋巴细胞比值 (NLR) 的内容展示区。' },
-    { id: 'pni', title: 'PNI (预后营养指数)', content: 'PNI (预后营养指数) 的内容展示区。' },
-    { id: 'siri', title: 'SIRI (全身炎症反应指数)', content: 'SIRI (全身炎症反应指数) 的内容展示区。' },
-    { id: 'mpv', title: 'MPV (平均血小板体积)', content: 'MPV (平均血小板体积) 的内容展示区。' },
-    { id: 'rdw', title: 'RDW (红细胞分布宽度)', content: 'RDW (红细胞分布宽度) 的内容展示区。' },
+    { id: 'nlr', title: '中性粒细胞/淋巴细胞比值(NLR)', content: '中性粒细胞/淋巴细胞比值 (NLR) 的图表展示区。' },
+    { id: 'pni', title: 'PNI (预后营养指数)', content: 'PNI (预后营养指数) 的图表展示区。' },
+    { id: 'siri', title: 'SIRI (全身炎症反应指数)', content: 'SIRI (全身炎症反应指数) 的图表展示区。' },
+    { id: 'mpv', title: 'MPV (平均血小板体积)', content: 'MPV (平均血小板体积) 的图表展示区。' },
+    { id: 'rdw', title: 'RDW (红细胞分布宽度)', content: 'RDW (红细胞分布宽度) 的图表展示区。' },
+    { id: 'crp', title: 'C-反应蛋白 (CRP)', content: 'C-反应蛋白 (CRP) 的图表展示区。' },
+    { id: 'albumin', title: '白蛋白 (Albumin)', content: '白蛋白 (Albumin) 的图表展示区。' },
+    { id: 'globulin', title: '球蛋白 (Globulin)', content: '球蛋白 (Globulin) 的图表展示区。' },
 ];
 
 const multiOrganFunctionData = [
-    { id: 'fib4', title: 'FIB-4 (肝纤维化指数)', content: 'FIB-4 (肝纤维化指数) 的内容展示区。' },
-    { id: 'tbi', title: 'TBi (总胆红素指数)', content: 'TBi (总胆红素指数) 的内容展示区。' },
-    { id: 'egfr', title: 'eGFR (估算肾小球滤过率)', content: 'eGFR (估算肾小球滤过率) 的内容展示区。' },
-    { id: 'ucs', title: 'UCS (尿酸/肌酐比值)', content: 'UCS (尿酸/肌酐比值) 的内容展示区。' },
-    { id: 'uacr', title: 'UACR (尿白蛋白/肌酐比值)', content: 'UACR (尿白蛋白/肌酐比值) 的内容展示区。' },
+    { id: 'fib4', title: 'FIB-4 (肝纤维化指数)', content: 'FIB-4 (肝纤维化指数) 的图表展示区。' },
+    { id: 'tbi', title: 'TBi (总胆红素指数)', content: 'TBi (总胆红素指数) 的图表展示区。' },
+    { id: 'egfr', title: 'eGFR (估算肾小球滤过率)', content: 'eGFR (估算肾小球滤过率) 的图表展示区。' },
+    { id: 'ucs', title: 'UCS (尿酸/肌酐比值)', content: 'UCS (尿酸/肌酐比值) 的图表展示区。' },
+    { id: 'uacr', title: 'UACR (尿白蛋白/肌酐比值)', content: 'UACR (尿白蛋白/肌酐比值) 的图表展示区。' },
+    { id: 'bun', title: '尿素氮 (BUN)', content: '尿素氮 (BUN) 的图表展示区。' },
+    { id: 'creatinine', title: '肌酐 (Creatinine)', content: '肌酐 (Creatinine) 的图表展示区。' },
+    { id: 'alt', title: '谷丙转氨酶 (ALT)', content: '谷丙转氨酶 (ALT) 的图表展示区。' },
+    { id: 'ast', title: '谷草转氨酶 (AST)', content: '谷草转氨酶 (AST) 的图表展示区。' },
 ];
 
 const integrativeMedicineData = [
-    { id: 'ag', title: 'AG (阴离子间隙)', content: 'AG (阴离子间隙) 的内容展示区。' },
-    { id: 'stress', title: '压力与皮质醇水平', content: '压力与皮质醇水平的内容展示区。' },
-    { id: 'sleep', title: '睡眠质量指数', content: '睡眠质量指数的内容展示区。' },
-    { id: 'microbiome', title: '肠道菌群多样性', content: '肠道菌群多样性的内容展示区。' },
+    { id: 'ag', title: 'AG (阴离子间隙)', content: 'AG (阴离子间隙) 的图表展示区。' },
+    { id: 'stress', title: '压力与皮质醇水平', content: '压力与皮质醇水平的图表展示区。' },
+    { id: 'sleep', title: '睡眠质量指数', content: '睡眠质量指数的图表展示区。' },
+    { id: 'microbiome', title: '肠道菌群多样性', content: '肠道菌群多样性的图表展示区。' },
+    { id: 'vitamind', title: '维生素D水平', content: '维生素D水平的图表展示区。' },
+    { id: 'homocysteine', title: '同型半胱氨酸', content: '同型半胱氨酸的图表展示区。' },
+    { id: 'ferritin', title: '铁蛋白', content: '铁蛋白的图表展示区。' },
 ];
 
 
@@ -447,7 +461,7 @@ function InteractiveMenu({ data }: { data: { id: string; title: string; content:
         <div className="w-full h-full flex items-center justify-center">
             <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 h-auto">
                 {/* 左侧标签栏 */}
-                <div className="lg:col-span-1 flex flex-col space-y-4 pr-4 h-[500px] self-center">
+                <div className="lg:col-span-1 flex flex-col space-y-4 pr-2 h-[450px] self-start overflow-y-auto">
                     {data.map(tab => (
                         <TabButton
                             key={tab.id}
@@ -460,10 +474,12 @@ function InteractiveMenu({ data }: { data: { id: string; title: string; content:
                 </div>
 
                 {/* 右侧内容区 */}
-                <div className="lg:col-span-2 rounded-2xl p-8 h-[500px] flex items-center justify-center">
-                    <div className="text-center">
+                <div className="lg:col-span-2 rounded-2xl p-8 h-[450px] flex items-center justify-center">
+                     <div className="text-center w-full h-full flex flex-col items-center justify-center">
                         <h2 className="text-2xl font-bold text-gray-100 mb-4">{activeTabData?.title}</h2>
-                        <p className="text-gray-300">{activeTabData?.content}</p>
+                        <div className="w-full h-full flex-grow rounded-lg border-2 border-dashed border-gray-600 flex items-center justify-center">
+                            <p className="text-gray-500">图表展示区</p>
+                        </div>
                     </div>
                 </div>
             </div>
