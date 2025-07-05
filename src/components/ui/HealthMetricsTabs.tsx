@@ -5,11 +5,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AnimatedRadialChart from './AnimatedRadialChart';
 import InteractiveMenu from './InteractiveMenu';
 import VascularHealthDashboard from './VascularHealthDashboard';
+import { AtherosclerosisRiskMatrix } from '@/components/ui/AtherosclerosisRiskMatrix'; // 导入新组件
 
-// --- 四个不同领域的标签页数据 ---
+// --- Tab data definitions ---
+
 const cardiovascularMetabolicData = [
    { id: '1', title: '核心血压与血管健康', content: <VascularHealthDashboard /> },
-   { id: '2', title: '动脉粥样硬化风险矩阵', content: '图表展示区' },
+   { id: '2', title: '动脉粥样硬化风险矩阵', content: <AtherosclerosisRiskMatrix /> }, // 在此处使用导入的组件
    { id: '3', title: '心脏结构与功能快照', content: '图表展示区' },
    { id: '4', title: '心脏泵血效率与电生理', content: '图表展示区' },
    { id: '5', title: '胰岛素抵抗与糖脂毒性', content: '图表展示区' },
@@ -38,6 +40,8 @@ const integrativeMedicineData = [
    { id: '19', title: '中医证候与微生态量化', content: '图表展示区' },
 ];
 
+// --- Main Tabs Component ---
+
 const HealthMetricsTabs = () => {
   const [activeTab, setActiveTab] = useState(0);
 
@@ -57,7 +61,6 @@ const HealthMetricsTabs = () => {
 
   return (
     <div className="w-full py-16">
-        {/* Tabs Header */}
         <div className="flex flex-wrap justify-center gap-8">
             {chartData.map((chart, index) => (
                 <div
@@ -87,7 +90,6 @@ const HealthMetricsTabs = () => {
             ))}
         </div>
 
-        {/* Tabs Content Panel - 移除了固定的高度，让内容自然撑开 */}
         <div className="mt-12 w-full">
             <AnimatePresence mode="wait">
                 <motion.div
