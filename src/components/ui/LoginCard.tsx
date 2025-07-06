@@ -60,16 +60,42 @@ const ErrorDisplay = ({ message }: { message?: string | null }) => (
     </AnimatePresence>
 );
 
+// --- API 调用函数 ---
+async function callApi(endpoint: string, body: object) {
+    const response = await fetch(`/api/auth/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || '请求失败');
+    }
+    return data;
+}
+
 
 // --- 视图组件 ---
 
-const LoginView = ({ setView }: { setView: (view: View) => void }) => {
+const LoginView = ({ setView, onClose }: { setView: (view: View) => void, onClose: () => void }) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
     
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // 模拟API调用和错误处理
-        setError("邮箱或密码不正确");
+        setLoading(true);
+        setError(null);
+        try {
+            await callApi('login', { email, password });
+            onClose();
+            window.location.reload();
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -79,11 +105,11 @@ const LoginView = ({ setView }: { setView: (view: View) => void }) => {
             <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
                     <label htmlFor="email-login" className="block text-sm font-medium text-gray-300 mb-2">邮箱</label>
-                    <input id="email-login" type="email" placeholder="you@example.com" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
+                    <input id="email-login" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
                 </div>
                 <div>
                     <label htmlFor="password-login" className="block text-sm font-medium text-gray-300 mb-2">密码</label>
-                    <input id="password-login" type="password" placeholder="••••••••" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
+                    <input id="password-login" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
                     <div className="h-6">
                         <ErrorDisplay message={error} />
                     </div>
@@ -91,8 +117,8 @@ const LoginView = ({ setView }: { setView: (view: View) => void }) => {
                 <div className="flex items-center justify-end">
                     <button type="button" onClick={() => setView('forgotPassword')} className="text-sm text-gray-400 hover:text-[#0CF2A0] transition-colors">忘记密码?</button>
                 </div>
-                <motion.button type="submit" className="w-full bg-[#0CF2A0] text-[#111111] py-3 rounded-lg text-base font-bold hover:bg-opacity-90 transition-colors duration-200 shadow-lg hover:shadow-xl !mt-6" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    登录
+                <motion.button type="submit" disabled={loading} className="w-full bg-[#0CF2A0] text-[#111111] py-3 rounded-lg text-base font-bold hover:bg-opacity-90 transition-colors duration-200 shadow-lg hover:shadow-xl !mt-6 disabled:opacity-50" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    {loading ? '登录中...' : '登录'}
                 </motion.button>
                 <div className="text-center !mt-6">
                     <p className="text-sm text-gray-400">
@@ -105,12 +131,44 @@ const LoginView = ({ setView }: { setView: (view: View) => void }) => {
 };
 
 const RegisterView = ({ setView }: { setView: (view: View) => void }) => {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [code, setCode] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [codeLoading, setCodeLoading] = useState(false);
+    const [codeSent, setCodeSent] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSendCode = async () => {
+        if (!email) {
+            setError("请输入邮箱地址");
+            return;
+        }
+        setCodeLoading(true);
+        setError(null);
+        try {
+            await callApi('send-verification', { email });
+            setCodeSent(true);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setCodeLoading(false);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // 模拟API调用和错误处理
-        setError("邮箱验证码不正确");
+        setLoading(true);
+        setError(null);
+        try {
+            await callApi('register', { name, email, password, code });
+            setView('login');
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -120,30 +178,30 @@ const RegisterView = ({ setView }: { setView: (view: View) => void }) => {
             <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
                     <label htmlFor="name-register" className="block text-sm font-medium text-gray-300 mb-2">姓名</label>
-                    <input id="name-register" type="text" placeholder="您的姓名" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
+                    <input id="name-register" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="您的姓名" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
                 </div>
                 <div>
                     <label htmlFor="email-register" className="block text-sm font-medium text-gray-300 mb-2">邮箱</label>
-                    <input id="email-register" type="email" placeholder="you@example.com" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
+                    <input id="email-register" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
                 </div>
                 <div>
                     <label htmlFor="password-register" className="block text-sm font-medium text-gray-300 mb-2">密码</label>
-                    <input id="password-register" type="password" placeholder="••••••••" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
+                    <input id="password-register" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
                 </div>
                 <div>
                     <label htmlFor="code-register" className="block text-sm font-medium text-gray-300 mb-2">邮箱验证码</label>
                     <div className="flex items-center space-x-2">
-                        <input id="code-register" type="text" placeholder="6位验证码" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
-                        <button type="button" className="flex-shrink-0 bg-gray-600/50 text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-gray-600/80 transition-colors duration-200 whitespace-nowrap">
-                            发送验证码
+                        <input id="code-register" type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder="6位验证码" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
+                        <button type="button" disabled={codeLoading} onClick={handleSendCode} className="flex-shrink-0 bg-gray-600/50 text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-gray-600/80 transition-colors duration-200 whitespace-nowrap disabled:opacity-50">
+                            {codeLoading ? '发送中...' : (codeSent ? '已发送' : '发送验证码')}
                         </button>
                     </div>
                     <div className="h-6">
                         <ErrorDisplay message={error} />
                     </div>
                 </div>
-                <motion.button type="submit" className="w-full bg-[#0CF2A0] text-[#111111] py-3 rounded-lg text-base font-bold hover:bg-opacity-90 transition-colors duration-200 shadow-lg hover:shadow-xl !mt-6" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    注册
+                <motion.button type="submit" disabled={loading} className="w-full bg-[#0CF2A0] text-[#111111] py-3 rounded-lg text-base font-bold hover:bg-opacity-90 transition-colors duration-200 shadow-lg hover:shadow-xl !mt-6 disabled:opacity-50" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    {loading ? '注册中...' : '注册'}
                 </motion.button>
                 <div className="text-center !mt-6">
                     <p className="text-sm text-gray-400">
@@ -156,15 +214,48 @@ const RegisterView = ({ setView }: { setView: (view: View) => void }) => {
 };
 
 const ForgotPasswordView = ({ setView }: { setView: (view: View) => void }) => {
-    const [errors, setErrors] = useState<{ code?: string; password?: string }>({});
+    const [email, setEmail] = useState('');
+    const [code, setCode] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [errors, setErrors] = useState<{ code?: string; password?: string, general?: string }>({});
+    const [loading, setLoading] = useState(false);
+    const [codeLoading, setCodeLoading] = useState(false);
+    const [codeSent, setCodeSent] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSendCode = async () => {
+        if (!email) {
+            setErrors({ general: "请输入邮箱地址" });
+            return;
+        }
+        setCodeLoading(true);
+        setErrors({});
+        try {
+            await callApi('send-verification', { email });
+            setCodeSent(true);
+        } catch (err: any) {
+            setErrors({ general: err.message });
+        } finally {
+            setCodeLoading(false);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // 模拟API调用和错误处理
-        setErrors({
-            code: "邮箱验证码不正确",
-            password: "两次输入的密码不一致"
-        });
+        if (password !== confirmPassword) {
+            setErrors({ password: "两次输入的密码不一致" });
+            return;
+        }
+        setLoading(true);
+        setErrors({});
+        try {
+            await callApi('reset-password', { email, code, password });
+            setView('login');
+        } catch (err: any) {
+            setErrors({ general: err.message });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -174,33 +265,33 @@ const ForgotPasswordView = ({ setView }: { setView: (view: View) => void }) => {
             <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
                     <label htmlFor="email-forgot" className="block text-sm font-medium text-gray-300 mb-2">邮箱</label>
-                    <input id="email-forgot" type="email" placeholder="you@example.com" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
+                    <input id="email-forgot" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
                 </div>
                 <div>
                     <label htmlFor="code-forgot" className="block text-sm font-medium text-gray-300 mb-2">邮箱验证码</label>
                     <div className="flex items-center space-x-2">
-                        <input id="code-forgot" type="text" placeholder="6位验证码" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
-                        <button type="button" className="flex-shrink-0 bg-gray-600/50 text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-gray-600/80 transition-colors duration-200 whitespace-nowrap">
-                            发送验证码
+                        <input id="code-forgot" type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder="6位验证码" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
+                        <button type="button" disabled={codeLoading} onClick={handleSendCode} className="flex-shrink-0 bg-gray-600/50 text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-gray-600/80 transition-colors duration-200 whitespace-nowrap disabled:opacity-50">
+                            {codeLoading ? '发送中...' : (codeSent ? '已发送' : '发送验证码')}
                         </button>
                     </div>
                     <div className="h-6">
-                        <ErrorDisplay message={errors.code} />
+                        <ErrorDisplay message={errors.code || errors.general} />
                     </div>
                 </div>
                  <div>
                     <label htmlFor="password-forgot" className="block text-sm font-medium text-gray-300 mb-2">新密码</label>
-                    <input id="password-forgot" type="password" placeholder="••••••••" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
+                    <input id="password-forgot" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
                 </div>
                  <div>
                     <label htmlFor="confirm-password-forgot" className="block text-sm font-medium text-gray-300 mb-2">确认新密码</label>
-                    <input id="confirm-password-forgot" type="password" placeholder="••••••••" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
+                    <input id="confirm-password-forgot" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
                     <div className="h-6">
                         <ErrorDisplay message={errors.password} />
                     </div>
                 </div>
-                <motion.button type="submit" className="w-full bg-[#0CF2A0] text-[#111111] py-3 rounded-lg text-base font-bold hover:bg-opacity-90 transition-colors duration-200 shadow-lg hover:shadow-xl !mt-6" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    提交
+                <motion.button type="submit" disabled={loading} className="w-full bg-[#0CF2A0] text-[#111111] py-3 rounded-lg text-base font-bold hover:bg-opacity-90 transition-colors duration-200 shadow-lg hover:shadow-xl !mt-6 disabled:opacity-50" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    {loading ? '提交中...' : '提交'}
                 </motion.button>
                 <div className="text-center !mt-6">
                     <p className="text-sm text-gray-400">
@@ -235,7 +326,6 @@ const LoginCard: React.FC<LoginCardProps> = ({ isOpen, onClose }) => {
 
     const handleClose = () => {
         onClose();
-        // 延迟重置视图，以确保关闭动画完成后再切换回登录页
         setTimeout(() => {
             setView('login');
         }, 300);
@@ -276,7 +366,7 @@ const LoginCard: React.FC<LoginCardProps> = ({ isOpen, onClose }) => {
                                     exit="exit"
                                     className="absolute w-[calc(100%-64px)] md:w-[calc(100%-80px)]"
                                 >
-                                    {view === 'login' && <LoginView setView={handleSetView} />}
+                                    {view === 'login' && <LoginView setView={handleSetView} onClose={handleClose} />}
                                     {view === 'register' && <RegisterView setView={handleSetView} />}
                                     {view === 'forgotPassword' && <ForgotPasswordView setView={handleSetView} />}
                                 </motion.div>
