@@ -143,11 +143,11 @@ const AppHeader = () => {
                                             initial="hidden"
                                             animate="visible"
                                             exit="exit"
-                                            className="absolute top-full right-0 mt-2 w-full min-w-max bg-[#1c1c1c] border border-gray-700 rounded-md shadow-lg z-40 p-1"
+                                            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max bg-[#1c1c1c] border border-gray-700 rounded-md shadow-lg z-40 p-1"
                                         >
                                             <button
                                                 onClick={handleLogout}
-                                                className="w-full text-left px-3 py-1.5 text-sm text-gray-300 hover:bg-gray-700/50 rounded-md transition-colors duration-200"
+                                                className="whitespace-nowrap px-4 py-1.5 text-sm text-gray-300 hover:bg-gray-700/50 rounded-md transition-colors duration-200"
                                             >
                                                 点击退出
                                             </button>
