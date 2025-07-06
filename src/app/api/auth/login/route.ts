@@ -1,4 +1,5 @@
 // src/app/api/auth/login/route.ts
+import { list } from '@vercel/blob';
 import { comparePassword, encrypt } from '../../../../lib/auth';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
@@ -8,26 +9,29 @@ export async function POST(request: Request) {
     const { email, password } = await request.json();
 
     // 1. 从 Vercel Blob 获取用户信息
-    const blobPath = `users/${email}.json`;
-    
-    // 关键修复：改回使用 fetch 方法，并增加详细的错误处理
-    if (!process.env.BLOB_URL || !process.env.BLOB_READ_WRITE_TOKEN) {
-        throw new Error("服务器缺少 Blob 存储的配置信息");
+    // 关键修复：使用 list 方法来查找用户文件，因为文件名包含随机后缀
+    const { blobs } = await list({ prefix: `users/${email}` });
+
+    // 从搜索结果中精确找到匹配的文件
+    // Vercel Blob 会在邮箱后添加一个'-'和随机字符串
+    const userBlob = blobs.find(blob => blob.pathname.startsWith(`users/${email}-`));
+
+    // 如果找不到任何匹配的文件，说明用户不存在
+    if (!userBlob) {
+      return NextResponse.json({ error: '邮箱或密码不正确' }, { status: 400 });
     }
 
-    const blobUrl = `${process.env.BLOB_URL}/${blobPath}`;
-    const response = await fetch(blobUrl, {
+    // 直接使用找到的 blob 的 url 来安全地获取内容
+    const response = await fetch(userBlob.url, {
         headers: {
+            // 注意：访问私有 blob 的 url 时通常不需要额外的 auth token，
+            // 但如果您的 blob 是私有的，并且 url 是临时的，则可能需要。
+            // 对于公共 blob，则不需要此 header。为保险起见，我们保留它。
             'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
         }
     });
-
-    if (response.status === 404) {
-      return NextResponse.json({ error: '邮箱或密码不正确' }, { status: 400 });
-    }
     
     if (!response.ok) {
-        // 记录更详细的错误信息以供调试
         const errorText = await response.text();
         console.error(`Failed to fetch user from blob. Status: ${response.status}, Body: ${errorText}`);
         throw new Error('从数据库获取用户信息失败');
