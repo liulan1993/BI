@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { CloseIcon } from './icons';
 
@@ -138,7 +138,15 @@ const RegisterView = ({ setView }: { setView: (view: View) => void }) => {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [codeLoading, setCodeLoading] = useState(false);
-    const [codeSent, setCodeSent] = useState(false);
+    const [countdown, setCountdown] = useState(0);
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (countdown > 0) {
+            timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+        }
+        return () => clearTimeout(timer);
+    }, [countdown]);
 
     const handleSendCode = async () => {
         if (!email) {
@@ -149,7 +157,7 @@ const RegisterView = ({ setView }: { setView: (view: View) => void }) => {
         setError(null);
         try {
             await callApi('send-verification', { email });
-            setCodeSent(true);
+            setCountdown(120); // 开始120秒倒计时
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -192,8 +200,8 @@ const RegisterView = ({ setView }: { setView: (view: View) => void }) => {
                     <label htmlFor="code-register" className="block text-sm font-medium text-gray-300 mb-2">邮箱验证码</label>
                     <div className="flex items-center space-x-2">
                         <input id="code-register" type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder="6位验证码" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
-                        <button type="button" disabled={codeLoading} onClick={handleSendCode} className="flex-shrink-0 bg-gray-600/50 text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-gray-600/80 transition-colors duration-200 whitespace-nowrap disabled:opacity-50">
-                            {codeLoading ? '发送中...' : (codeSent ? '已发送' : '发送验证码')}
+                        <button type="button" disabled={codeLoading || countdown > 0} onClick={handleSendCode} className="flex-shrink-0 bg-gray-600/50 text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-gray-600/80 transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
+                            {codeLoading ? '发送中...' : (countdown > 0 ? `${countdown}秒后重发` : '发送验证码')}
                         </button>
                     </div>
                     <div className="h-6">
@@ -221,7 +229,15 @@ const ForgotPasswordView = ({ setView }: { setView: (view: View) => void }) => {
     const [errors, setErrors] = useState<{ code?: string; password?: string, general?: string }>({});
     const [loading, setLoading] = useState(false);
     const [codeLoading, setCodeLoading] = useState(false);
-    const [codeSent, setCodeSent] = useState(false);
+    const [countdown, setCountdown] = useState(0);
+
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (countdown > 0) {
+            timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+        }
+        return () => clearTimeout(timer);
+    }, [countdown]);
 
     const handleSendCode = async () => {
         if (!email) {
@@ -232,7 +248,7 @@ const ForgotPasswordView = ({ setView }: { setView: (view: View) => void }) => {
         setErrors({});
         try {
             await callApi('send-verification', { email });
-            setCodeSent(true);
+            setCountdown(120); // 开始120秒倒计时
         } catch (err: any) {
             setErrors({ general: err.message });
         } finally {
@@ -271,8 +287,8 @@ const ForgotPasswordView = ({ setView }: { setView: (view: View) => void }) => {
                     <label htmlFor="code-forgot" className="block text-sm font-medium text-gray-300 mb-2">邮箱验证码</label>
                     <div className="flex items-center space-x-2">
                         <input id="code-forgot" type="text" value={code} onChange={(e) => setCode(e.target.value)} placeholder="6位验证码" className="w-full px-4 py-3 bg-[#27272a] border border-gray-600/80 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0] focus:border-[#0CF2A0] transition-all duration-200" required />
-                        <button type="button" disabled={codeLoading} onClick={handleSendCode} className="flex-shrink-0 bg-gray-600/50 text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-gray-600/80 transition-colors duration-200 whitespace-nowrap disabled:opacity-50">
-                            {codeLoading ? '发送中...' : (codeSent ? '已发送' : '发送验证码')}
+                        <button type="button" disabled={codeLoading || countdown > 0} onClick={handleSendCode} className="flex-shrink-0 bg-gray-600/50 text-white px-4 py-3 rounded-lg text-sm font-semibold hover:bg-gray-600/80 transition-colors duration-200 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
+                            {codeLoading ? '发送中...' : (countdown > 0 ? `${countdown}秒后重发` : '发送验证码')}
                         </button>
                     </div>
                     <div className="h-6">
@@ -341,6 +357,7 @@ const LoginCard: React.FC<LoginCardProps> = ({ isOpen, onClose }) => {
                     animate="visible"
                     exit="hidden"
                     className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 flex items-center justify-center"
+                    onClick={handleClose}
                 >
                     <motion.div
                         key="login-card"
