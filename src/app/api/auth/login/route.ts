@@ -8,7 +8,14 @@ export async function POST(request: Request) {
     const { email, password } = await request.json();
 
     // 1. 从 Vercel Blob 获取用户信息
-    const blobUrl = `${process.env.BLOB_URL}/users/${email}.json`;
+    const blobPath = `users/${email}.json`;
+    
+    // 关键修复：改回使用 fetch 方法，并增加详细的错误处理
+    if (!process.env.BLOB_URL || !process.env.BLOB_READ_WRITE_TOKEN) {
+        throw new Error("服务器缺少 Blob 存储的配置信息");
+    }
+
+    const blobUrl = `${process.env.BLOB_URL}/${blobPath}`;
     const response = await fetch(blobUrl, {
         headers: {
             'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
@@ -18,7 +25,11 @@ export async function POST(request: Request) {
     if (response.status === 404) {
       return NextResponse.json({ error: '邮箱或密码不正确' }, { status: 400 });
     }
+    
     if (!response.ok) {
+        // 记录更详细的错误信息以供调试
+        const errorText = await response.text();
+        console.error(`Failed to fetch user from blob. Status: ${response.status}, Body: ${errorText}`);
         throw new Error('从数据库获取用户信息失败');
     }
 
