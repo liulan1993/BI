@@ -4,12 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { CloseIcon } from './icons';
 
-// 定义视图类型
 type View = 'login' | 'register' | 'forgotPassword';
 
+// 关键修改：增加 onLoginSuccess 回调函数
 interface LoginCardProps {
     isOpen: boolean;
     onClose: () => void;
+    onLoginSuccess: (name: string) => void;
 }
 
 // --- 动画变体 ---
@@ -77,7 +78,7 @@ async function callApi(endpoint: string, body: object) {
 
 // --- 视图组件 ---
 
-const LoginView = ({ setView, onClose }: { setView: (view: View) => void, onClose: () => void }) => {
+const LoginView = ({ setView, onLoginSuccess }: { setView: (view: View) => void, onLoginSuccess: (name: string) => void }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState<string | null>(null);
@@ -88,9 +89,11 @@ const LoginView = ({ setView, onClose }: { setView: (view: View) => void, onClos
         setLoading(true);
         setError(null);
         try {
-            await callApi('login', { email, password });
-            onClose();
-            window.location.reload();
+            const data = await callApi('login', { email, password });
+            // 关键修改：调用 onLoginSuccess 并传递用户名
+            if (data.user?.name) {
+                onLoginSuccess(data.user.name);
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -157,7 +160,7 @@ const RegisterView = ({ setView }: { setView: (view: View) => void }) => {
         setError(null);
         try {
             await callApi('send-verification', { email });
-            setCountdown(120); // 开始120秒倒计时
+            setCountdown(120);
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -248,7 +251,7 @@ const ForgotPasswordView = ({ setView }: { setView: (view: View) => void }) => {
         setErrors({});
         try {
             await callApi('send-verification', { email });
-            setCountdown(120); // 开始120秒倒计时
+            setCountdown(120);
         } catch (err: any) {
             setErrors({ general: err.message });
         } finally {
@@ -320,19 +323,11 @@ const ForgotPasswordView = ({ setView }: { setView: (view: View) => void }) => {
 };
 
 
-/**
- * LoginCard 组件
- * @description 一个模态对话框，用于用户登录、注册和密码重置。
- */
-const LoginCard: React.FC<LoginCardProps> = ({ isOpen, onClose }) => {
+const LoginCard: React.FC<LoginCardProps> = ({ isOpen, onClose, onLoginSuccess }) => {
     const [view, setView] = useState<View>('login');
     const [direction, setDirection] = useState(0);
 
-    const viewHeights = {
-        login: 'h-[510px]',
-        register: 'h-[670px]',
-        forgotPassword: 'h-[700px]',
-    };
+    const viewHeights = { login: 'h-[510px]', register: 'h-[670px]', forgotPassword: 'h-[700px]' };
 
     const handleSetView = (newView: View) => {
         const order: View[] = ['forgotPassword', 'login', 'register'];
@@ -342,9 +337,7 @@ const LoginCard: React.FC<LoginCardProps> = ({ isOpen, onClose }) => {
 
     const handleClose = () => {
         onClose();
-        setTimeout(() => {
-            setView('login');
-        }, 300);
+        setTimeout(() => { setView('login'); }, 300);
     };
 
     return (
@@ -383,7 +376,7 @@ const LoginCard: React.FC<LoginCardProps> = ({ isOpen, onClose }) => {
                                     exit="exit"
                                     className="absolute w-[calc(100%-64px)] md:w-[calc(100%-80px)]"
                                 >
-                                    {view === 'login' && <LoginView setView={handleSetView} onClose={handleClose} />}
+                                    {view === 'login' && <LoginView setView={handleSetView} onLoginSuccess={onLoginSuccess} />}
                                     {view === 'register' && <RegisterView setView={handleSetView} />}
                                     {view === 'forgotPassword' && <ForgotPasswordView setView={handleSetView} />}
                                 </motion.div>
