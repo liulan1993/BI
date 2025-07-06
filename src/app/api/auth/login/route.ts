@@ -1,5 +1,5 @@
 // src/app/api/auth/login/route.ts
-import { comparePassword, encrypt } from '@/lib/auth';
+import { comparePassword, encrypt } from '../../../../lib/auth';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
@@ -8,9 +8,8 @@ export async function POST(request: Request) {
     const { email, password } = await request.json();
 
     // 1. 从 Vercel Blob 获取用户信息
-    // 注意: 此处URL需要根据您的Vercel项目动态调整或通过环境变量获取
-    const userBlobUrl = `https://${process.env.VERCEL_URL}/api/blob/users/${email}.json`;
-    const response = await fetch(`${process.env.BLOB_URL}/users/${email}.json`, {
+    const blobUrl = `${process.env.BLOB_URL}/users/${email}.json`;
+    const response = await fetch(blobUrl, {
         headers: {
             'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
         }
@@ -20,7 +19,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '邮箱或密码不正确' }, { status: 400 });
     }
     if (!response.ok) {
-        throw new Error('Failed to fetch user data from blob');
+        throw new Error('从数据库获取用户信息失败');
     }
 
     const user = await response.json();
@@ -35,11 +34,11 @@ export async function POST(request: Request) {
     const session = await encrypt({ sub: user.email, name: user.name });
 
     // 4. 设置 cookie
-    cookies().set('session', session, { httpOnly: true, secure: true, path: '/' });
+    cookies().set('session', session, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/' });
 
     return NextResponse.json({ message: '登录成功' });
   } catch (error) {
-    console.error(error);
+    console.error('Login API Error:', error);
     return NextResponse.json({ error: '服务器内部错误' }, { status: 500 });
   }
 }
