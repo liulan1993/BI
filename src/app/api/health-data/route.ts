@@ -1,8 +1,9 @@
 // src/app/api/health-data/route.ts
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { decrypt } from '../../../lib/auth'; // 使用我们之前创建的解密函数
-import { supabase } from '../../../lib/supabaseClient';
+import { decrypt } from '../../../lib/auth';
+// 关键修改：导入新的 supabaseAdmin 客户端
+import { supabaseAdmin } from '../../../lib/supabaseAdmin';
 
 export async function GET() {
   // 1. 从 Cookie 中获取并解密会话
@@ -19,8 +20,8 @@ export async function GET() {
   const userEmail = session.sub; // 从会话中获取用户邮箱
 
   try {
-    // 2. 使用 Supabase 客户端查询数据
-    const { data, error } = await supabase
+    // 2. 关键修改：使用 supabaseAdmin 客户端查询数据
+    const { data, error } = await supabaseAdmin
       .from('health_metrics')
       .select('*')
       .eq('user_email', userEmail) // 只查询属于当前登录用户的数据
@@ -34,7 +35,7 @@ export async function GET() {
     return NextResponse.json(data);
 
   } catch (error: any) {
-    console.error('Supabase query error:', error);
+    console.error('Supabase admin query error:', error);
     return NextResponse.json({ error: '获取健康数据失败', details: error.message }, { status: 500 });
   }
 }
