@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useMotionValueEvent, type Variants } from 'framer-motion';
 // 路径更正：从同一目录 (./) 导入
-import { MenuIcon, CloseIcon } from './icons'; 
+import { MenuIcon, CloseIcon, ChevronDownIcon } from './icons'; 
 // 路径更正：从同一目录 (./) 导入
 import LoginCard from './LoginCard'; 
 
@@ -13,7 +13,7 @@ const AppHeader = () => {
    const [isLoginOpen, setIsLoginOpen] = useState(false);
    const [isLoggedIn, setIsLoggedIn] = useState(false);
    const [userName, setUserName] = useState<string | null>(null);
-   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // 新增：控制下拉菜单的显示
 
    // 在组件挂载时调用 session 接口获取用户信息
    useEffect(() => {
@@ -60,20 +60,15 @@ const AppHeader = () => {
        setIsLoginOpen(false); // 关闭登录弹窗
    };
 
-   // 处理退出登录的函数
+   // 新增：处理退出登录
    const handleLogout = async () => {
        try {
-           const response = await fetch('/api/auth/logout', {
-               method: 'POST',
-           });
-           if (response.ok) {
-               // 刷新页面以重置所有状态
-               window.location.reload();
-           } else {
-               console.error("Logout failed");
-           }
+           await fetch('/api/auth/logout', { method: 'POST' });
+           setIsLoggedIn(false);
+           setUserName(null);
+           setIsDropdownOpen(false);
        } catch (error) {
-           console.error("Error during logout:", error);
+           console.error("Logout failed:", error);
        }
    };
 
@@ -97,9 +92,9 @@ const AppHeader = () => {
    };
 
    const dropdownVariants: Variants = {
-        hidden: { opacity: 0, y: -10, scale: 0.95 },
-        visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.15, ease: "easeOut" } },
-        exit: { opacity: 0, y: -10, scale: 0.95, transition: { duration: 0.1, ease: "easeIn" } }
+       hidden: { opacity: 0, y: -10, scale: 0.95 },
+       visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.15, ease: "easeOut" } },
+       exit: { opacity: 0, y: -10, scale: 0.95, transition: { duration: 0.1, ease: "easeIn" } }
    };
 
     return (
@@ -122,32 +117,36 @@ const AppHeader = () => {
                     <div className="flex items-center flex-shrink-0 space-x-4 lg:space-x-6">
                         {isLoggedIn ? (
                             <>
+                                {/* 关键修改：用户欢迎信息和下拉菜单 */}
                                 <div 
                                     className="relative"
                                     onMouseEnter={() => setIsDropdownOpen(true)}
                                     onMouseLeave={() => setIsDropdownOpen(false)}
                                 >
-                                    <span className="text-white text-base font-semibold whitespace-nowrap cursor-pointer">欢迎, {userName}!</span>
+                                    <button className="flex items-center space-x-1 text-white text-base font-semibold">
+                                        <span>欢迎, {userName}!</span>
+                                        <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                                    </button>
                                     <AnimatePresence>
                                         {isDropdownOpen && (
                                             <motion.div
-                                                key="dropdown-menu"
                                                 variants={dropdownVariants}
                                                 initial="hidden"
                                                 animate="visible"
                                                 exit="exit"
-                                                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max bg-[#1c1c1c] border border-gray-700 rounded-md shadow-lg z-40 p-1"
+                                                className="absolute top-full right-0 mt-2 w-32 bg-[#27272a] border border-gray-700/80 rounded-md shadow-lg overflow-hidden"
                                             >
                                                 <button
                                                     onClick={handleLogout}
-                                                    className="whitespace-nowrap px-4 py-1.5 text-sm text-gray-300 hover:bg-gray-700/50 rounded-md transition-colors duration-200"
+                                                    className="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700/60 transition-colors"
                                                 >
-                                                    点击退出
+                                                    退出
                                                 </button>
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
                                 </div>
+
                                 <button
                                     disabled
                                     className="bg-[#0CF2A0] text-[#111111] px-5 py-2 rounded-md text-base font-semibold whitespace-nowrap opacity-50 cursor-not-allowed"
