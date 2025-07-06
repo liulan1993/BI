@@ -13,7 +13,7 @@ const AppHeader = () => {
    const [isLoginOpen, setIsLoginOpen] = useState(false);
    const [isLoggedIn, setIsLoggedIn] = useState(false);
    const [userName, setUserName] = useState<string | null>(null);
-   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // 新增：控制下拉菜单显示
+   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
    // 在组件挂载时调用 session 接口获取用户信息
    useEffect(() => {
@@ -60,7 +60,7 @@ const AppHeader = () => {
        setIsLoginOpen(false); // 关闭登录弹窗
    };
 
-   // 新增：处理退出登录的函数
+   // 处理退出登录的函数
    const handleLogout = async () => {
        try {
            const response = await fetch('/api/auth/logout', {
@@ -121,40 +121,40 @@ const AppHeader = () => {
                     {/* 右侧操作按钮 */}
                     <div className="flex items-center flex-shrink-0 space-x-4 lg:space-x-6">
                         {isLoggedIn ? (
-                            <div 
-                                className="relative"
-                                onMouseEnter={() => setIsDropdownOpen(true)}
-                                onMouseLeave={() => setIsDropdownOpen(false)}
-                            >
-                                <div className="flex items-center space-x-4 lg:space-x-6 cursor-pointer">
-                                    <span className="text-white text-base font-semibold whitespace-nowrap">欢迎, {userName}!</span>
-                                    <button
-                                        disabled
-                                        className="bg-[#0CF2A0] text-[#111111] px-5 py-2 rounded-md text-base font-semibold whitespace-nowrap opacity-50 cursor-not-allowed"
-                                    >
-                                        健康指数看板
-                                    </button>
-                                </div>
-                                <AnimatePresence>
-                                    {isDropdownOpen && (
-                                        <motion.div
-                                            key="dropdown-menu"
-                                            variants={dropdownVariants}
-                                            initial="hidden"
-                                            animate="visible"
-                                            exit="exit"
-                                            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max bg-[#1c1c1c] border border-gray-700 rounded-md shadow-lg z-40 p-1"
-                                        >
-                                            <button
-                                                onClick={handleLogout}
-                                                className="whitespace-nowrap px-4 py-1.5 text-sm text-gray-300 hover:bg-gray-700/50 rounded-md transition-colors duration-200"
+                            <>
+                                <div 
+                                    className="relative"
+                                    onMouseEnter={() => setIsDropdownOpen(true)}
+                                    onMouseLeave={() => setIsDropdownOpen(false)}
+                                >
+                                    <span className="text-white text-base font-semibold whitespace-nowrap cursor-pointer">欢迎, {userName}!</span>
+                                    <AnimatePresence>
+                                        {isDropdownOpen && (
+                                            <motion.div
+                                                key="dropdown-menu"
+                                                variants={dropdownVariants}
+                                                initial="hidden"
+                                                animate="visible"
+                                                exit="exit"
+                                                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max bg-[#1c1c1c] border border-gray-700 rounded-md shadow-lg z-40 p-1"
                                             >
-                                                点击退出
-                                            </button>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
+                                                <button
+                                                    onClick={handleLogout}
+                                                    className="whitespace-nowrap px-4 py-1.5 text-sm text-gray-300 hover:bg-gray-700/50 rounded-md transition-colors duration-200"
+                                                >
+                                                    点击退出
+                                                </button>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                                <button
+                                    disabled
+                                    className="bg-[#0CF2A0] text-[#111111] px-5 py-2 rounded-md text-base font-semibold whitespace-nowrap opacity-50 cursor-not-allowed"
+                                >
+                                    健康指数看板
+                                </button>
+                            </>
                         ) : (
                             <motion.button
                                 onClick={() => setIsLoginOpen(true)}
