@@ -3,7 +3,6 @@ import { fontFamily } from "tailwindcss/defaultTheme";
 
 const config: Config = {
   content: [
-    // 移除了指向不存在的 'pages' 目录的错误路径
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
@@ -15,6 +14,8 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    require('tw-animate-css'), // 在这里注册 tw-animate-css 插件
+  ],
 };
 export default config;
