@@ -10,7 +10,9 @@ export async function POST(request: Request) {
 
     // 1. 验证验证码
     const storedCode = await kv.get(`verification_code:${email}`);
-    if (!storedCode || storedCode !== code) {
+
+    // 关键修复：将从数据库获取的值转换为字符串再进行比较
+    if (!storedCode || String(storedCode) !== code) {
       return NextResponse.json({ error: '邮箱验证码不正确' }, { status: 400 });
     }
     
