@@ -8,17 +8,15 @@ export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
 
-    // 1. 查找用户文件 (关键修复：使用正确的前缀)
-    // 使用 'users/email-' 作为前缀，以正确匹配文件名格式 'users/email-id.json'
+    // 1. 查找用户文件
     const { blobs } = await list({ prefix: `users/${email}-` });
 
-    // 如果没有找到任何文件，说明用户不存在
+    // 关键修改：如果未找到用户，明确提示“该账号未注册”
     if (blobs.length === 0) {
-      return NextResponse.json({ error: '邮箱或密码不正确' }, { status: 400 });
+      return NextResponse.json({ error: '该账号未注册' }, { status: 404 }); // 404 Not Found
     }
 
-    // 在实际应用中，一个邮箱通常只对应一个账户。
-    // 这里我们默认使用找到的第一个blob文件。
+    // 默认使用找到的第一个blob文件
     const userBlob = blobs[0];
 
     // 2. 获取用户信息并验证密码
@@ -29,6 +27,7 @@ export async function POST(request: Request) {
     const user = await response.json();
 
     const isPasswordValid = await comparePassword(password, user.hashedPassword);
+    // 如果密码不正确，返回模糊提示
     if (!isPasswordValid) {
       return NextResponse.json({ error: '邮箱或密码不正确' }, { status: 400 });
     }
