@@ -15,25 +15,22 @@ export async function POST(request: Request) {
     }
     
     // 2. 检查用户是否存在
-    // 关键修复：同样使用 list 方法来查找用户文件
     const { blobs } = await list({ prefix: `users/${email}` });
     const userBlob = blobs.find(blob => blob.pathname.startsWith(`users/${email}-`));
 
+    // 关键修复：提供更明确的错误提示
     if (!userBlob) {
-        return NextResponse.json({ error: '该邮箱未注册' }, { status: 404 });
+        return NextResponse.json({ error: '该邮箱地址未注册' }, { status: 404 });
     }
 
     // 3. 哈希新密码
     const hashedPassword = await hashPassword(password);
 
     // 4. 更新用户信息
-    const oldUserResponse = await fetch(userBlob.url, {
-        headers: {
-            'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
-        }
-    });
+    // 关键修复：直接访问由 list() 返回的已签名 URL，通常不需要额外的 Authorization header
+    const oldUserResponse = await fetch(userBlob.url);
     if (!oldUserResponse.ok) {
-        throw new Error('获取旧用户信息失败');
+        throw new Error('获取用户信息时出错，请稍后重试');
     }
     const oldUserData = await oldUserResponse.json();
     
@@ -51,6 +48,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: '密码重置成功' });
   } catch (error) {
     console.error('Reset Password API Error:', error);
-    return NextResponse.json({ error: '服务器内部错误' }, { status: 500 });
+    // 关键修复：在捕获到未知错误时，也提供一个对用户更友好的提示
+    return NextResponse.json({ error: '操作失败，请稍后重试' }, { status: 500 });
   }
 }
