@@ -8,7 +8,20 @@ import LoginCard from './LoginCard';
 const AppHeader = () => {
    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
    const [isScrolled, setIsScrolled] = useState<boolean>(false);
-   const [isLoginOpen, setIsLoginOpen] = useState(false); // 新增：用于控制登录卡片的状态
+   const [isLoginOpen, setIsLoginOpen] = useState(false);
+   const [isLoggedIn, setIsLoggedIn] = useState(false); // 新增：用于跟踪登录状态
+
+   // 新增：在组件挂载时检查用户登录状态
+   useEffect(() => {
+       const checkLoginStatus = () => {
+           // 通过检查是否存在 'session' cookie 来判断用户是否登录
+           const hasSessionCookie = document.cookie.split(';').some((item) => item.trim().startsWith('session='));
+           setIsLoggedIn(hasSessionCookie);
+       };
+       checkLoginStatus();
+       // 由于 LoginCard 登录成功后会刷新页面，此组件将重新挂载，
+       // 并再次执行此 effect，从而更新登录状态。
+   }, []); // 空依赖数组确保此 effect 只在组件挂载时运行
 
    // 监听滚动事件，用于改变导航栏样式
    const { scrollY } = useScroll();
@@ -16,9 +29,9 @@ const AppHeader = () => {
        setIsScrolled(latest > 10);
    });
 
-   // 控制移动端菜单打开时 body 的滚动
+   // 控制移动端菜单或登录卡片打开时 body 的滚动
    useEffect(() => {
-       if (isMobileMenuOpen || isLoginOpen) { // 更新：当登录卡片打开时也禁止滚动
+       if (isMobileMenuOpen || isLoginOpen) {
            document.body.style.overflow = 'hidden';
        } else {
            document.body.style.overflow = 'unset';
@@ -67,15 +80,27 @@ const AppHeader = () => {
 
                     {/* 右侧操作按钮 */}
                     <div className="flex items-center flex-shrink-0 space-x-4 lg:space-x-6">
-                        <motion.button
-                            onClick={() => setIsLoginOpen(true)} // 更新：点击时打开登录卡片
-                            className="bg-[#0CF2A0] text-[#111111] px-5 py-2 rounded-md text-base font-semibold hover:bg-opacity-90 transition-colors duration-200 whitespace-nowrap shadow-sm hover:shadow-md"
-                            whileHover={{ scale: 1.03, y: -1 }}
-                            whileTap={{ scale: 0.97 }}
-                            transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                        >
-                            健康指数看板登录
-                        </motion.button>
+                        {/* 关键修改：根据登录状态显示不同按钮 */}
+                        {isLoggedIn ? (
+                            // 登录后：显示不可点击的按钮
+                            <button
+                                disabled
+                                className="bg-[#0CF2A0] text-[#111111] px-5 py-2 rounded-md text-base font-semibold whitespace-nowrap opacity-50 cursor-not-allowed"
+                            >
+                                健康指数看板
+                            </button>
+                        ) : (
+                            // 登录前：显示登录按钮
+                            <motion.button
+                                onClick={() => setIsLoginOpen(true)}
+                                className="bg-[#0CF2A0] text-[#111111] px-5 py-2 rounded-md text-base font-semibold hover:bg-opacity-90 transition-colors duration-200 whitespace-nowrap shadow-sm hover:shadow-md"
+                                whileHover={{ scale: 1.03, y: -1 }}
+                                whileTap={{ scale: 0.97 }}
+                                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                            >
+                                健康指数看板登录
+                            </motion.button>
+                        )}
                         
                         {/* 移动端菜单按钮 */}
                         <motion.button
@@ -106,7 +131,6 @@ const AppHeader = () => {
                 </AnimatePresence>
             </motion.header>
 
-            {/* 新增：渲染登录卡片组件 */}
             <LoginCard isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
         </>
     );
