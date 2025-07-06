@@ -4,7 +4,6 @@ import React, { useEffect } from 'react';
 import AppHeader from '@/components/ui/AppHeader';
 import InteractiveCanvas from '@/components/ui/InteractiveCanvas';
 import DemoHeroGeometric from '@/components/ui/HeroSection';
-import HealthMetricsTabs from '@/components/ui/HealthMetricsTabs';
 
 /**
  * 页面主组件
@@ -32,7 +31,6 @@ const Page = () => {
         <main className="flex-grow relative z-10 px-4 pt-24 pb-16">
             <div className="flex flex-col items-center text-center">
                 <DemoHeroGeometric />
-                <HealthMetricsTabs />
             </div>
         </main>
     </div>
