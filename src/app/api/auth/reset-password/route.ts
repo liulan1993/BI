@@ -1,6 +1,6 @@
 // src/app/api/auth/reset-password/route.ts
 import { kv } from '@vercel/kv';
-import { put, head } from '@vercel/blob'; // 移除了 get 方法
+import { put, list } from '@vercel/blob'; // 引入 list 方法
 import { hashPassword } from '../../../../lib/auth';
 import { NextResponse } from 'next/server';
 
@@ -15,8 +15,10 @@ export async function POST(request: Request) {
     }
     
     // 2. 检查用户是否存在
-    const blobPath = `users/${email}.json`;
-    const userBlob = await head(blobPath);
+    // 关键修复：同样使用 list 方法来查找用户文件
+    const { blobs } = await list({ prefix: `users/${email}` });
+    const userBlob = blobs.find(blob => blob.pathname.startsWith(`users/${email}-`));
+
     if (!userBlob) {
         return NextResponse.json({ error: '该邮箱未注册' }, { status: 404 });
     }
@@ -25,22 +27,20 @@ export async function POST(request: Request) {
     const hashedPassword = await hashPassword(password);
 
     // 4. 更新用户信息
-    // 关键修复：同样改回使用 fetch 方法来获取旧数据
-    if (!process.env.BLOB_URL || !process.env.BLOB_READ_WRITE_TOKEN) {
-        throw new Error("服务器缺少 Blob 存储的配置信息");
-    }
-    const blobUrl = `${process.env.BLOB_URL}/${blobPath}`;
-    const response = await fetch(blobUrl, {
-        headers: { 'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` }
+    const oldUserResponse = await fetch(userBlob.url, {
+        headers: {
+            'Authorization': `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
+        }
     });
-    if (!response.ok) {
+    if (!oldUserResponse.ok) {
         throw new Error('获取旧用户信息失败');
     }
-    const oldUserData = await response.json();
+    const oldUserData = await oldUserResponse.json();
     
     const newUserData = { ...oldUserData, hashedPassword, updatedAt: new Date().toISOString() };
     
-    await put(blobPath, JSON.stringify(newUserData), {
+    // 使用完整的、带随机后缀的路径来更新文件
+    await put(userBlob.pathname, JSON.stringify(newUserData), {
       access: 'public',
       contentType: 'application/json',
     });
