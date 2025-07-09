@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
 
 // =======================================================================
@@ -227,10 +227,29 @@ function HeroGeometric({
         }),
     };
 
+    // 新增：用于控制背景可见性的状态
+    const [isBgVisible, setIsBgVisible] = useState(false);
+
+    // 新增：用于在延迟后触发背景可见性的效果
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsBgVisible(true);
+        }, 500); // 延迟500毫秒后开始背景的淡入动画
+        return () => clearTimeout(timer); // 组件卸载时清除计时器
+    }, []);
+
+
     return (
         <div className="relative w-full flex items-center justify-center overflow-hidden">
-            {/* 背景：在这里调用 ShaderBackground 组件 */}
-            <ShaderBackground />
+            {/* 背景：现在被包裹在 motion.div 中以实现动画效果 */}
+            <motion.div
+                className="absolute top-0 left-0 w-full h-full z-0"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: isBgVisible ? 1 : 0 }}
+                transition={{ duration: 1, ease: "easeIn" }}
+            >
+                <ShaderBackground />
+            </motion.div>
 
             {/* 内容 */}
             <div className="relative z-10 container mx-auto px-4 md:px-6">
@@ -246,7 +265,7 @@ function HeroGeometric({
                                 {title1}
                             </span>
                             <br />
-                            <span style={{ color: '#FFC700' }}>
+                            <span style={{ color: '#fb8b05' }}>
                                 {title2}
                             </span>
                         </h1>
