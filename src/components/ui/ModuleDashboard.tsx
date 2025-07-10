@@ -5,9 +5,6 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Heart, X as XIcon, Loader2, GripVertical } from "lucide-react";
-// 删除了不再使用的 supabase 客户端导入
-// import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-// import type { Session } from "@supabase/supabase-js";
 import {
   DndContext,
   closestCenter,
@@ -19,7 +16,6 @@ import {
 import {
   arrayMove,
   SortableContext,
-  sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable,
 } from '@dnd-kit/sortable';
@@ -41,9 +37,10 @@ interface MenuItem {
 // --- 页面内容占位符组件 ---
 const PageContent = ({ title }: { title: string }) => {
   return (
+    // 修复：强制使用深色主题文本颜色
     <div className="flex-1 p-4 md:p-10">
-      <h1 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-200">{title}</h1>
-      <div className="mt-4 text-neutral-700 dark:text-neutral-300">
+      <h1 className="text-xl md:text-2xl font-bold text-neutral-200">{title}</h1>
+      <div className="mt-4 text-neutral-300">
         <p>这是 {title} 页面的内容。您可以在此基础上构建具体的功能。</p>
       </div>
     </div>
@@ -69,20 +66,22 @@ function SortableFavoriteItem({ id, activeTab, setActiveTab, handleFavoriteToggl
     <div
       ref={setNodeRef}
       style={style}
+      // 修复：强制使用深色主题背景色
       className={cn(
         "flex items-center justify-between group/fav rounded-md w-full",
         activeTab === id
-          ? "bg-neutral-200 dark:bg-neutral-700"
-          : "hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50"
+          ? "bg-neutral-700"
+          : "hover:bg-neutral-700/50"
       )}
     >
       <button {...attributes} {...listeners} className="p-2 cursor-grab touch-none">
         <GripVertical className="h-4 w-4 text-neutral-400" />
       </button>
       <button onClick={() => setActiveTab(id)} className="flex-1 py-2 px-1 text-left">
+        {/* 修复：强制使用深色主题文本颜色 */}
         <span className={cn(
           "text-sm",
-          activeTab === id ? "font-semibold text-pink-600 dark:text-pink-400" : "text-neutral-700 dark:text-neutral-200"
+          activeTab === id ? "font-semibold text-pink-400" : "text-neutral-200"
         )}>
           {id}
         </span>
@@ -125,19 +124,21 @@ const RecursiveMenuBlock = ({
 
   if (!hasSubLinks) {
     return (
+      // 修复：强制使用深色主题背景色
       <div className={cn(
         "flex items-center justify-between group/sidebar rounded-md w-full",
         "transition-colors duration-150",
         activeTab === item.label
-          ? "bg-neutral-200 dark:bg-neutral-700"
-          : "hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50"
+          ? "bg-neutral-700"
+          : "hover:bg-neutral-700/50"
       )}>
         <button
           onClick={() => onTabClick(item.label)}
           style={{ paddingLeft }}
           className="flex-1 py-2 text-left"
         >
-          <span className={cn("text-neutral-700 dark:text-neutral-200 whitespace-pre", fontSize, fontWeight)}>
+          {/* 修复：强制使用深色主题文本颜色 */}
+          <span className={cn("text-neutral-200 whitespace-pre", fontSize, fontWeight)}>
             {item.label}
           </span>
         </button>
@@ -147,7 +148,8 @@ const RecursiveMenuBlock = ({
               e.stopPropagation();
               onFavoriteToggle(item.label);
             }} 
-            className="p-2 mr-1 rounded-full hover:bg-neutral-300/50 dark:hover:bg-neutral-600/50"
+            // 修复：强制使用深色主题背景色
+            className="p-2 mr-1 rounded-full hover:bg-neutral-600/50"
           >
             <Heart 
               className={cn(
@@ -166,9 +168,11 @@ const RecursiveMenuBlock = ({
       <button
         onClick={() => onMenuToggle(item.label)}
         style={{ paddingLeft }}
-        className="flex items-center justify-between group/sidebar py-2 rounded-md w-full text-left hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50"
+        // 修复：强制使用深色主题背景色
+        className="flex items-center justify-between group/sidebar py-2 rounded-md w-full text-left hover:bg-neutral-700/50"
       >
-        <span className={cn("text-neutral-700 dark:text-neutral-200", fontSize, fontWeight)}>
+        {/* 修复：强制使用深色主题文本颜色 */}
+        <span className={cn("text-neutral-200", fontSize, fontWeight)}>
           {item.label}
         </span>
         <ChevronDown
@@ -219,18 +223,14 @@ export default function ModuleDashboard() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor));
 
-  // 关键修改：替换认证逻辑
-  // 1. 使用 effect 来检查会话并加载数据
   useEffect(() => {
     const checkAuthAndLoadData = async () => {
       setIsLoading(true);
       try {
-        // 使用与 AppHeader 一致的会话检查端点
         const sessionResponse = await fetch('/api/auth/session');
         
         if (sessionResponse.ok) {
           setIsLoggedIn(true);
-          // 登录成功，获取用户收藏列表
           const profileResponse = await fetch('/api/user-profile');
           if (profileResponse.ok) {
             const data = await profileResponse.json();
@@ -240,7 +240,6 @@ export default function ModuleDashboard() {
             setFavorites([]);
           }
         } else {
-          // 未登录
           setIsLoggedIn(false);
           setFavorites([]);
         }
@@ -255,16 +254,14 @@ export default function ModuleDashboard() {
     
     checkAuthAndLoadData();
     
-    // 监听 'auth-change' 事件，以便在登录/退出后刷新数据，无需重载页面
     const handleAuthChange = () => checkAuthAndLoadData();
     window.addEventListener('auth-change', handleAuthChange);
 
     return () => {
         window.removeEventListener('auth-change', handleAuthChange);
     };
-  }, []); // 空依赖数组，仅在挂载时运行一次初始检查
+  }, []);
 
-  // 2. 当“重点关注”列表变化时，自动保存到数据库 (带防抖效果)
   useEffect(() => {
     if (!isLoggedIn || isLoading) return;
 
@@ -371,9 +368,10 @@ export default function ModuleDashboard() {
   ];
 
   return (
+    // 修复：强制使用深色主题背景色和边框色
     <div
       className={cn(
-        "relative rounded-md flex flex-row bg-gray-100 dark:bg-neutral-800 mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden",
+        "relative rounded-md flex flex-row bg-neutral-800 mx-auto border border-neutral-700 overflow-hidden",
         "h-screen"
       )}
     >
@@ -392,17 +390,19 @@ export default function ModuleDashboard() {
       </AnimatePresence>
 
       {/* Sidebar Component */}
-      <div className="h-full px-2 py-4 flex flex-col bg-neutral-100 dark:bg-neutral-800 w-[300px] md:w-[350px] flex-shrink-0">
+      {/* 修复：强制使用深色主题背景色 */}
+      <div className="h-full px-2 py-4 flex flex-col bg-neutral-800 w-[300px] md:w-[350px] flex-shrink-0">
         
         {/* --- 重点关注区域 --- */}
         <div className="flex-shrink-0 min-h-[100px] max-h-[40%] overflow-y-auto">
-          <h2 className="text-lg font-semibold px-3 py-2 text-neutral-800 dark:text-neutral-200">重点关注</h2>
+          {/* 修复：强制使用深色主题文本颜色 */}
+          <h2 className="text-lg font-semibold px-3 py-2 text-neutral-200">重点关注</h2>
           <div className="flex flex-col gap-1 p-1">
             {isLoading ? (
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="h-6 w-6 animate-spin text-neutral-500" />
               </div>
-            ) : favorites.length > 0 && isLoggedIn ? ( // 增加 isLoggedIn 判断
+            ) : favorites.length > 0 && isLoggedIn ? (
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -432,7 +432,8 @@ export default function ModuleDashboard() {
         </div>
 
         {/* --- 分割线 --- */}
-        <hr className="my-4 border-neutral-200 dark:border-neutral-700" />
+        {/* 修复：强制使用深色主题边框色 */}
+        <hr className="my-4 border-neutral-700" />
 
         {/* --- 所有模块区域 --- */}
         <div className="flex-1 overflow-y-auto">
@@ -454,7 +455,8 @@ export default function ModuleDashboard() {
       </div>
 
       {/* Dynamic Page Content */}
-      <div className="flex bg-white dark:bg-neutral-900 w-[1280px]">
+      {/* 修复：强制使用深色主题背景色 */}
+      <div className="flex bg-neutral-900 w-[1280px]">
         <PageContent title={activeTab} />
       </div>
     </div>
