@@ -58,6 +58,7 @@ const AppHeader = () => {
        setIsLoggedIn(true);
        setUserName(name);
        setIsLoginOpen(false); // 关闭登录弹窗
+       window.dispatchEvent(new Event('auth-change')); // <--- 新增此行
    };
 
    // 新增：处理退出登录
@@ -66,6 +67,7 @@ const AppHeader = () => {
            await fetch('/api/auth/logout', { method: 'POST' });
            setIsLoggedIn(false);
            setUserName(null);
+           window.dispatchEvent(new Event('auth-change')); // <--- 新增此行
            setIsDropdownOpen(false);
        } catch (error) {
            console.error("Logout failed:", error);

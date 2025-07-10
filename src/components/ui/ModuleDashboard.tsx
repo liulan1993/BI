@@ -5,8 +5,9 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Heart, X as XIcon, Loader2, GripVertical } from "lucide-react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import type { Session } from "@supabase/supabase-js";
+// 删除了不再使用的 supabase 客户端导入
+// import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+// import type { Session } from "@supabase/supabase-js";
 import {
   DndContext,
   closestCenter,
@@ -207,7 +208,6 @@ const RecursiveMenuBlock = ({
 
 // --- 主演示/导出组件 ---
 export default function ModuleDashboard() {
-  const supabase = createClientComponentClient();
   const [activeTab, setActiveTab] = useState("脉压(PP)");
   const [openMenus, setOpenMenus] = useState<string[]>([
     "心血管-代谢域", "血压与血管健康模块", "血脂与动脉粥样硬化模块",
@@ -219,36 +219,50 @@ export default function ModuleDashboard() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor));
 
-  // 1. 使用 onAuthStateChange 作为唯一可信源来管理认证状态和加载数据
+  // 关键修改：替换认证逻辑
+  // 1. 使用 effect 来检查会话并加载数据
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const checkAuthAndLoadData = async () => {
       setIsLoading(true);
-      if (session) {
-        setIsLoggedIn(true);
-        try {
-          const response = await fetch('/api/user-profile');
-          if (response.ok) {
-            const data = await response.json();
+      try {
+        // 使用与 AppHeader 一致的会话检查端点
+        const sessionResponse = await fetch('/api/auth/session');
+        
+        if (sessionResponse.ok) {
+          setIsLoggedIn(true);
+          // 登录成功，获取用户收藏列表
+          const profileResponse = await fetch('/api/user-profile');
+          if (profileResponse.ok) {
+            const data = await profileResponse.json();
             setFavorites(data.favorites || []);
           } else {
             console.error("Failed to fetch favorites");
             setFavorites([]);
           }
-        } catch (error) {
-          console.error("Error fetching favorites:", error);
+        } else {
+          // 未登录
+          setIsLoggedIn(false);
           setFavorites([]);
         }
-      } else {
+      } catch (error) {
+        console.error("Error checking session or fetching profile:", error);
         setIsLoggedIn(false);
         setFavorites([]);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
-    });
+    };
+    
+    checkAuthAndLoadData();
+    
+    // 监听 'auth-change' 事件，以便在登录/退出后刷新数据，无需重载页面
+    const handleAuthChange = () => checkAuthAndLoadData();
+    window.addEventListener('auth-change', handleAuthChange);
 
     return () => {
-      authListener.subscription.unsubscribe();
+        window.removeEventListener('auth-change', handleAuthChange);
     };
-  }, [supabase]);
+  }, []); // 空依赖数组，仅在挂载时运行一次初始检查
 
   // 2. 当“重点关注”列表变化时，自动保存到数据库 (带防抖效果)
   useEffect(() => {
@@ -388,7 +402,7 @@ export default function ModuleDashboard() {
               <div className="flex items-center justify-center p-4">
                 <Loader2 className="h-6 w-6 animate-spin text-neutral-500" />
               </div>
-            ) : favorites.length > 0 ? (
+            ) : favorites.length > 0 && isLoggedIn ? ( // 增加 isLoggedIn 判断
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
