@@ -3,7 +3,8 @@
 import React, { useEffect } from 'react';
 import AppHeader from '@/components/ui/AppHeader';
 import DemoHeroGeometric from '@/components/ui/HeroSection';
-import InteractiveCanvas from '@/components/ui/InteractiveCanvas'; // 恢复了 InteractiveCanvas
+import InteractiveCanvas from '@/components/ui/InteractiveCanvas';
+import ModuleDashboard from '@/components/ui/ModuleDashboard'; // 导入新的组件
 
 /**
  * 页面主组件
@@ -27,18 +28,20 @@ const Page = () => {
         <AppHeader />
 
         {/* 主内容区域 */}
-        <main className="flex-grow relative z-10 flex flex-col">
-            {/* 欢迎界面部分，现在是 main 的直接子元素，可以占据完整宽度 */}
-            <div className="pt-40">
+        <main className="flex-grow relative z-10 flex flex-col items-center">
+            {/* 欢迎界面部分 */}
+            <div className="pt-40 w-full">
                 <DemoHeroGeometric />
             </div>
             
-            {/* 其他内容的容器，这里应用了内边距 */}
-            <div className="px-32 pb-16">
-                {/* 空白占位符，用于延长页面内容区域 */}
-                <div className="h-[3000px] w-full">
-                    {/* 您可以在此区域内或之后添加更多组件 */}
-                </div>
+            {/* 模块仪表盘部分 */}
+            <div className="py-20 w-full flex justify-center">
+                <ModuleDashboard />
+            </div>
+
+            {/* 其他可能的内容 */}
+            <div className="h-[1000px] w-full">
+                {/* 您可以在此区域内或之后添加更多组件 */}
             </div>
         </main>
     </div>
