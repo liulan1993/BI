@@ -153,12 +153,12 @@ export default function ModuleDashboard() {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // 1. 加载用户和他们的“重点关注”列表
+  // 1. 使用 onAuthStateChange 作为唯一可信源来管理认证状态和加载数据
   useEffect(() => {
-    const fetchUserAndFavorites = async () => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       setIsLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setIsLoggedIn(true);
         try {
@@ -168,26 +168,17 @@ export default function ModuleDashboard() {
             setFavorites(data.favorites || []);
           } else {
             console.error("Failed to fetch favorites");
+            setFavorites([]);
           }
         } catch (error) {
           console.error("Error fetching favorites:", error);
+          setFavorites([]);
         }
       } else {
         setIsLoggedIn(false);
-      }
-      setIsLoading(false);
-    };
-
-    fetchUserAndFavorites();
-    
-    const { data: authListener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
-      if (event === 'SIGNED_IN') {
-        fetchUserAndFavorites();
-      }
-      if (event === 'SIGNED_OUT') {
-        setIsLoggedIn(false);
         setFavorites([]);
       }
+      setIsLoading(false);
     });
 
     return () => {
@@ -224,9 +215,16 @@ export default function ModuleDashboard() {
     setOpenMenus(prev => prev.includes(label) ? prev.filter(m => m !== label) : [...prev, label]);
   };
 
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3000);
+  };
+
   const handleFavoriteToggle = (label: string) => {
     if (!isLoggedIn) {
-      alert("请先登录以使用收藏功能。");
+      showToast("请先登录以使用收藏功能。");
       return;
     }
     setFavorites(prev => prev.includes(label) ? prev.filter(f => f !== label) : [...prev, label]);
@@ -280,10 +278,24 @@ export default function ModuleDashboard() {
   return (
     <div
       className={cn(
-        "rounded-md flex flex-row bg-gray-100 dark:bg-neutral-800 mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden",
+        "relative rounded-md flex flex-row bg-gray-100 dark:bg-neutral-800 mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden",
         "h-screen"
       )}
     >
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-5 right-1/2 translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50"
+          >
+            {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Sidebar Component */}
       <div className="h-full px-2 py-4 flex flex-col bg-neutral-100 dark:bg-neutral-800 w-[300px] md:w-[350px] flex-shrink-0">
         
