@@ -4,7 +4,8 @@ import React, { useEffect } from 'react';
 import AppHeader from '@/components/ui/AppHeader';
 import DemoHeroGeometric from '@/components/ui/HeroSection';
 import InteractiveCanvas from '@/components/ui/InteractiveCanvas';
-import ModuleDashboard from '@/components/ui/ModuleDashboard'; // 导入新的组件
+import ModuleDashboard from '@/components/ui/ModuleDashboard';
+import RadialGaugeChart from '@/components/ui/RadialGaugeChart'; // 1. 导入新的图表组件
 
 /**
  * 页面主组件
@@ -32,6 +33,11 @@ const Page = () => {
             {/* 欢迎界面部分 */}
             <div className="pt-40 w-full">
                 <DemoHeroGeometric />
+            </div>
+
+            {/* 2. 将图表组件放置在此处 */}
+            <div className="py-20 w-full flex justify-center">
+                <RadialGaugeChart />
             </div>
             
             {/* 模块仪表盘部分 */}
