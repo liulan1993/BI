@@ -5,6 +5,7 @@ import AppHeader from '@/components/ui/AppHeader';
 import DemoHeroGeometric from '@/components/ui/HeroSection';
 import InteractiveCanvas from '@/components/ui/InteractiveCanvas';
 import ModuleDashboard from '@/components/ui/ModuleDashboard';
+import { ActivityCard } from "@/components/ui/activity-card";
 
 /**
  * 页面主组件
@@ -33,9 +34,16 @@ const Page = () => {
             <div className="pt-40 w-full">
                 <DemoHeroGeometric />
             </div>
-           
+
+            {/* ActivityCard 组件区域 */}
+            <div className="py-20 w-full flex justify-center px-4">
+                <div className="w-full max-w-[1600px]"> {/* 容器已加宽 */}
+                    <ActivityCard />
+                </div>
+            </div>
+
             {/* 模块仪表盘部分 */}
-            <div className="py-20 w-full flex justify-center">
+            <div className="pb-20 w-full flex justify-center">
                 <ModuleDashboard />
             </div>
 
