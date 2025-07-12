@@ -35,11 +35,9 @@ const Page = () => {
                 <DemoHeroGeometric />
             </div>
 
-            {/* ActivityCard 组件区域 */}
+            {/* ActivityCard 组件区域 (容器已简化) */}
             <div className="py-20 w-full flex justify-center px-4">
-                <div className="w-full max-w-[1600px]"> {/* 容器已加宽 */}
-                    <ActivityCard />
-                </div>
+                <ActivityCard />
             </div>
 
             {/* 模块仪表盘部分 */}
